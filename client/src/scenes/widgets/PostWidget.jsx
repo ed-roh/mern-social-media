@@ -4,11 +4,22 @@ import {
   FavoriteOutlined,
   ShareOutlined,
 } from "@mui/icons-material";
-import { Box, Divider, IconButton, Typography, useTheme } from "@mui/material";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import {
+  Avatar,
+  Box,
+  Button,
+  Divider,
+  IconButton,
+  InputBase,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import FlexBetween from "components/FlexBetween";
 import Friend from "components/Friend";
 import WidgetWrapper from "components/WidgetWrapper";
 import { useState } from "react";
+import NearMeIcon from "@mui/icons-material/NearMe";
 import { useDispatch, useSelector } from "react-redux";
 import { setPost } from "state";
 
@@ -22,13 +33,15 @@ const PostWidget = ({
   userPicturePath,
   likes,
   comments,
+  createdAt,
 }) => {
   const [isComments, setIsComments] = useState(false);
+  const [commentText, setCommentText] = useState("");
   const dispatch = useDispatch();
   const token = useSelector((state) => state.token);
-  const loggedInUserId = useSelector((state) => state.user._id);
-  const isLiked = Boolean(likes[loggedInUserId]);
-  const likeCount = Object.keys(likes).length;
+  const loggedInUser = useSelector((state) => state.user._id);
+  const likeCount = likes.length;
+  const isLiked = likes.includes(loggedInUser);
 
   const { palette } = useTheme();
   const main = palette.neutral.main;
@@ -41,10 +54,38 @@ const PostWidget = ({
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ userId: loggedInUserId }),
+      body: JSON.stringify({ user: loggedInUser }),
     });
     const updatedPost = await response.json();
     dispatch(setPost({ post: updatedPost }));
+  };
+
+  const submitComment = async () => {
+    const response = await fetch(`http://localhost:3001/comments/${postId}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId: loggedInUser, comment: commentText }),
+    });
+    const updatedPost = await response.json();
+    dispatch(setPost({ post: updatedPost }));
+    setCommentText("");
+  };
+
+  const deleteComment =  async (commentID) => {
+    const response = await fetch(`http://localhost:3001/comments/${postId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId : loggedInUser , commentId : commentID }),
+    });
+    const updatedPost = await response.json();
+    dispatch(setPost({ post: updatedPost }));
+    setCommentText("");
   };
 
   return (
@@ -54,6 +95,7 @@ const PostWidget = ({
         name={name}
         subtitle={location}
         userPicturePath={userPicturePath}
+        createdAt={createdAt}
       />
       <Typography color={main} sx={{ mt: "1rem" }}>
         {description}
@@ -92,16 +134,73 @@ const PostWidget = ({
           <ShareOutlined />
         </IconButton>
       </FlexBetween>
+
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          my: 1,
+        }}
+      >
+        <InputBase
+          placeholder="Write a comment..."
+          onChange={(e) => setCommentText(e.target.value)}
+          value={commentText}
+          sx={{
+            width: "100%",
+            backgroundColor: palette.neutral.light,
+            borderRadius: "2rem",
+            padding: "0.5rem 2rem",
+            mr: 1,
+          }}
+        />
+        <Button
+          disabled={commentText.trim().length < 1}
+          onClick={submitComment}
+          sx={{
+            color: palette.background.alt,
+            backgroundColor: palette.primary.main,
+            borderRadius: "3rem",
+          }}
+        >
+          <NearMeIcon color={palette.text.primary} />
+        </Button>
+      </Box>
+
       {isComments && (
         <Box mt="0.5rem">
-          {comments.map((comment, i) => (
-            <Box key={`${name}-${i}`}>
-              <Divider />
-              <Typography sx={{ color: main, m: "0.5rem 0", pl: "1rem" }}>
-                {comment}
-              </Typography>
-            </Box>
-          ))}
+          {comments.map((item, i) => {
+            return (
+              <Box key={item._id}>
+                <Divider />
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", py: 1 }}>
+                    <Avatar
+                      src={`http://localhost:3001/assets/${item.user.picturePath}`}
+                      alt=""
+                      sx={{ width: 30, height: 30 }}
+                    />
+                    <Typography sx={{ color: main, m: "0.5rem 0", pl: "1rem" }}>
+                      {item.comment}
+                    </Typography>
+                  </Box>
+
+                  {loggedInUser === item.user.userId && (
+                    <IconButton onClick={() => deleteComment(item._id)}>
+                      <DeleteOutlineIcon />
+                    </IconButton>
+                  )}
+                </Box>
+              </Box>
+            );
+          })}
           <Divider />
         </Box>
       )}

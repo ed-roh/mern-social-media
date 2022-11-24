@@ -1,8 +1,9 @@
 import { Box } from "@mui/material";
 
-const UserImage = ({ image, size = "60px" }) => {
+const UserImage = ({ image , isComment}) => {
+  const size = isComment ? "30px" : "45px" 
   return (
-    <Box width={size} height={size}>
+    <Box sx={{mr:isComment ? 1 : 0}} width={size} height={size}>
       <img
         style={{ objectFit: "cover", borderRadius: "50%" }}
         width={size}
