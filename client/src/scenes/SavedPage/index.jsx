@@ -30,6 +30,9 @@ const SavedPage = () => {
     window.location.reload();
   }
 
+  const deleteAllSaved = () => {
+    localStorage.removeItem("savedPosts")
+  }
   useEffect(() => {
     getsavedPosts();
   }, []);
@@ -62,21 +65,22 @@ const SavedPage = () => {
                 <MenuItem value="good">Good</MenuItem>
                 <MenuItem value="ok">Ok</MenuItem>
               </Select>
+              {/* <Button onClick={deleteAllSaved}>Delete All </Button> */}
             </Box>
           </Grid>
           {filteredImages?.length > 0 ? (
             filteredImages?.map((image, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
                 <PostWidget
-                  postId={savedPosts.postId}
-                  postUserId={savedPosts.userId}
-                  name={savedPosts.name}
-                  description={savedPosts.description}
-                  location={savedPosts.location}
+                  postId={image.postId}
+                  postUserId={image.userId}
+                  name={image.name}
+                  description={image.description}
+                  location={image.location}
                   picturePath={image?.picturePath}
-                  userPicturePath={savedPosts?.userPicturePath}
-                  likes={'4'}
-                  comments={savedPosts?.comments}
+                  userPicturePath={image?.userPicturePath}
+                  likes={image?.likes}
+                  comments={image?.comments}
                 />
                 {/* <Button variant="contained" color="error" style={{ marginTop: '1rem' }}
                   onClick={() => handleRemoveItem(index)}>Remove</Button> */}

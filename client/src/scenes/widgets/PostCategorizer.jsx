@@ -11,6 +11,7 @@ const PostCategorizer = ({
   name,
   description,
   location,
+  comments
 }) => {
   const [category, setCategory] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -20,9 +21,9 @@ const PostCategorizer = ({
   };
 
   const handleSave = () => {
-    const getItem = JSON.parse(localStorage.getItem('savedPosts'))
-    const alreadySaved = getItem.find(item => item.postId === postId)
-    if(!alreadySaved){
+    // const getItem = JSON.parse(localStorage.getItem('savedPosts'))
+    // const alreadySaved = getItem.find(item => item.postId === postId)
+    if(true){
       const categorizedPost = {
         postId,
         category,
@@ -33,6 +34,7 @@ const PostCategorizer = ({
         name,
         description,
         location,
+        comments
       };
       const savedPosts = JSON.parse(localStorage.getItem('savedPosts')) || [];
       savedPosts.push(categorizedPost);

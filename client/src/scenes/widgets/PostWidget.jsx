@@ -96,13 +96,14 @@ const PostWidget = ({
             <Typography>{comments?.length}</Typography>
           </FlexBetween>
 
-          <IconButton onClick={() => setPostCategory(!PostCategory)}>
+        { !window.location.pathname.includes('saved') && <IconButton onClick={() => setPostCategory(!PostCategory)}>
             {PostCategory ? (
               <BookmarkBorder sx={{ color: primary }} />
             ) : (
               <BookmarkBorder />
             )}
           </IconButton>
+        }
         </FlexBetween>
         <IconButton onClick={handleShare}>
         <ShareOutlined />
@@ -110,7 +111,7 @@ const PostWidget = ({
       </FlexBetween>
       {isComments && (
         <Box mt="0.5rem">
-          {comments.map((comment, i) => (
+          {comments?.map((comment, i) => (
             <Box key={`${name}-${i}`}>
               <Divider />
               <Typography sx={{ color: main, m: "0.5rem 0", pl: "1rem" }}>
@@ -126,7 +127,8 @@ const PostWidget = ({
           userPicturePath={userPicturePath}
           name={name}
           description={description}
-          location={location} />}
+          location={location} 
+          comments={comments}/>}
       </Box>
     </WidgetWrapper>
   );
