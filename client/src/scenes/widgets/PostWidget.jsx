@@ -6,7 +6,7 @@ import {
   BookmarkBorder,
   BookmarkOutlined,
 } from "@mui/icons-material";
-import { Box, Divider, IconButton, Typography, useTheme } from "@mui/material";
+import { Box, Divider, IconButton, Typography, useTheme, Button } from "@mui/material";
 import FlexBetween from "components/FlexBetween";
 import Friend from "components/Friend";
 import WidgetWrapper from "components/WidgetWrapper";
@@ -55,7 +55,7 @@ const PostWidget = ({
     const postUrl = `http://localhost:3000/posts`;
     navigator.clipboard.writeText(postUrl);
   };
-  
+
   return (
     <WidgetWrapper m="2rem 0">
       <Friend
@@ -65,9 +65,31 @@ const PostWidget = ({
         userPicturePath={userPicturePath}
       />
       <Typography color={main} sx={{ mt: "1rem" }}>
-        {description}
+        {/* {description.includes('.com') ? <a href={description} target="_blank" rel="noreferrer">Best Buy Link</a> : description } */}
+        {description.includes('.com') ? (
+          <Button
+            onClick={() => window.open(description, "_blank")}
+            variant="contained"
+            style={{
+              cursor: "pointer",
+            }}
+          >
+            Best Buy Link
+          </Button>
+        ) : (
+          <p>{description}</p>
+        )}
+
       </Typography>
-      {picturePath && (
+      {picturePath && picturePath.includes(".com") ? (
+        <img
+          width="100%"
+          height="280px"
+          alt="post"
+          style={{ borderRadius: "0.75rem", marginTop: "0.75rem" }}
+          src={`${picturePath}`}
+        />
+      ) : (
         <img
           width="100%"
           height="280px"
@@ -76,6 +98,7 @@ const PostWidget = ({
           src={`http://localhost:3001/assets/${picturePath}`}
         />
       )}
+
       <FlexBetween mt="0.25rem">
         <FlexBetween gap="1rem">
           <FlexBetween gap="0.3rem">
@@ -96,18 +119,18 @@ const PostWidget = ({
             <Typography>{comments?.length}</Typography>
           </FlexBetween>
 
-        { !window.location.pathname.includes('saved') && <IconButton onClick={() => setPostCategory(!PostCategory)}>
+          {!window.location.pathname.includes('saved') && <IconButton onClick={() => setPostCategory(!PostCategory)}>
             {PostCategory ? (
               <BookmarkBorder sx={{ color: primary }} />
             ) : (
               <BookmarkBorder />
             )}
           </IconButton>
-        }
+          }
         </FlexBetween>
         <IconButton onClick={handleShare}>
-        <ShareOutlined />
-      </IconButton>
+          <ShareOutlined />
+        </IconButton>
       </FlexBetween>
       {isComments && (
         <Box mt="0.5rem">
@@ -127,8 +150,8 @@ const PostWidget = ({
           userPicturePath={userPicturePath}
           name={name}
           description={description}
-          location={location} 
-          comments={comments}/>}
+          location={location}
+          comments={comments} />}
       </Box>
     </WidgetWrapper>
   );
