@@ -18,7 +18,7 @@ const AdvertWidget = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`https://sheetdb.io/api/v1/kwecdtehfatv`);
+      const response = await axios.get(`https://sheetdb.io/api/v1/kwecdtehfatvt`);
       const data = response.data;
       console.log('93', data);
       setData(data);
