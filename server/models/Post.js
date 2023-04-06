@@ -22,10 +22,20 @@ const postSchema = mongoose.Schema(
       type: Map,
       of: Boolean,
     },
-    comments: {
-      type: Array,
-      default: [],
-    },
+    comments: [{
+      userId: {
+        type: String,
+        required: true,
+      },
+      comment: {
+        type: String,
+        // required: true,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now(),
+      },
+    }],
     saved: {
       type: Map,
       of: Boolean,

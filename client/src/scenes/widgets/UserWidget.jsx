@@ -3,23 +3,30 @@ import {
   EditOutlined,
   LocationOnOutlined,
   WorkOutlineOutlined,
+  CheckCircleRounded ,
+  OpenInFull 
 } from "@mui/icons-material";
-import { Box, Typography, Divider, useTheme } from "@mui/material";
+import { Box, Typography, Divider, useTheme, TextField } from "@mui/material";
 import UserImage from "components/UserImage";
 import FlexBetween from "components/FlexBetween";
 import WidgetWrapper from "components/WidgetWrapper";
 import { useSelector } from "react-redux";
+import axios from 'axios'
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const UserWidget = ({ userId, picturePath }) => {
   const [user, setUser] = useState(null);
+  const { _id } = useSelector((state) => state.user);
+  const [ currentUser, setCurrentUser] = useState('')
+  const [InputBox, setInputBox] = useState(false);
   const { palette } = useTheme();
   const navigate = useNavigate();
   const token = useSelector((state) => state.token);
   const dark = palette.neutral.dark;
   const medium = palette.neutral.medium;
   const main = palette.neutral.main;
+
 
   const getUser = async () => {
     const response = await fetch(`http://localhost:3001/users/${userId}`, {
@@ -30,8 +37,31 @@ const UserWidget = ({ userId, picturePath }) => {
     setUser(data);
   };
 
+
+  const updateUser = async () => {
+    try {
+      const response = await axios.patch(
+        `http://localhost:3001/users/${userId}`,
+        { twitter, linkedIn },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      setUser(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
+  
   useEffect(() => {
     getUser();
+  localStorage.setItem('userId', userId)
+  const cu = localStorage.getItem('userId')
+  setCurrentUser(cu)
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!user) {
@@ -46,8 +76,36 @@ const UserWidget = ({ userId, picturePath }) => {
     viewedProfile,
     impressions,
     friends,
+    twitter,
+    linkedIn
   } = user;
+  const handleSubmit = () => {
+    updateUser()
+    setInputBox(false)
+   }
+   const handleTwitterEdit = () => {
+    setUser((prev) => ({
+      ...prev,
+      twitter
+    }));
+    
+  };
+  
+  const ProfileId = window.location.pathname.split("/").pop()
 
+  // const handleLinkedInEdit = () =>{
+  //   setInputBox(!InputBox)
+  // }
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setUser((prevState) => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+  
+  console.log('103',userId === ProfileId, ProfileId, _id)
   return (
     <WidgetWrapper>
       {/* FIRST ROW */}
@@ -123,26 +181,42 @@ const UserWidget = ({ userId, picturePath }) => {
             <img src="../assets/twitter.png" alt="twitter" />
             <Box>
               <Typography color={main} fontWeight="500">
-                Twitter
+             Twitter 
               </Typography>
-              <Typography color={medium}>Social Network</Typography>
-            </Box>
-          </FlexBetween>
-          <EditOutlined sx={{ color: main }} />
+              {InputBox ?
+              <>
+              <TextField id="standard-basic" label="" variant="standard" 
+              name="twitter" onChange={handleInputChange}/>  
+         
+              </>
+              :
+              <>
+              <Typography color={medium}>{twitter}</Typography>
+              
+              </>
+              }
+            </Box>     
+          </FlexBetween>    
+          { (_id === ProfileId) ? ( InputBox ? 
+          
+          <CheckCircleRounded onClick={handleSubmit} /> 
+          :
+         <EditOutlined sx={{ color: main }} onClick={() => setInputBox(!InputBox)}/> 
+          ):''}    
         </FlexBetween>
 
-        <FlexBetween gap="1rem">
+        {/* <FlexBetween gap="1rem">
           <FlexBetween gap="1rem">
             <img src="../assets/linkedin.png" alt="linkedin" />
             <Box>
               <Typography color={main} fontWeight="500">
                 Linkedin
               </Typography>
-              <Typography color={medium}>Network Platform</Typography>
+              <Typography color={medium}>{linkedIn}</Typography>
             </Box>
           </FlexBetween>
-          <EditOutlined sx={{ color: main }} />
-        </FlexBetween>
+          <EditOutlined sx={{ color: main }}/>
+        </FlexBetween> */}
       </Box>
     </WidgetWrapper>
   );

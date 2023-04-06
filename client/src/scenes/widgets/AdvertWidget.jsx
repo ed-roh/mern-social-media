@@ -18,7 +18,7 @@ const AdvertWidget = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`https://sheetdb.io/api/v1/kwecdtehfatvt`);
+      const response = await axios.get(`https://sheetdb.io/api/v1/kwecdtehfatv`);
       const data = response.data;
       console.log('93', data);
       setData(data);
@@ -43,12 +43,12 @@ const AdvertWidget = () => {
     }
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      handleSlideChange("next");
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     handleSlideChange("next");
+  //   }, 3000);
+  //   return () => clearInterval(interval);
+  // }, []);
   
   return (
     <WidgetWrapper>
@@ -92,7 +92,7 @@ const AdvertWidget = () => {
   }}>
     <FlexBetween>
       <Typography variant="h4" component="h4" color={main}>{item.Price}</Typography>
-      <Typography color={medium}><a href={item.Link}>Quick Buy</a></Typography>
+      <Typography color={medium}><a href="https://www.nike.com/gb/" >Quick Buy</a></Typography>
     </FlexBetween>
     <Typography color={medium} m="0.5rem 0">
       {item.Description}
