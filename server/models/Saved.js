@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const postSchema = mongoose.Schema(
+const savedSchema = mongoose.Schema(
   {
     userId: {
       type: String,
@@ -22,20 +22,10 @@ const postSchema = mongoose.Schema(
       type: Map,
       of: Boolean,
     },
-    comments: [{
-      userId: {
-        type: String,
-        required: true,
-      },
-      comment: {
-        type: String,
-        // required: true,
-      },
-      createdAt: {
-        type: Date,
-        default: Date.now(),
-      },
-    }],
+    comments: {
+      type: Array,
+      default: [],
+    },
     saved: {
       type: Map,
       of: Boolean,
@@ -44,6 +34,6 @@ const postSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-const Post = mongoose.model("Post", postSchema);
+const Saved = mongoose.model("Saved", savedSchema);
 
-export default Post;
+export default Saved;

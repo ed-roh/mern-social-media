@@ -46,6 +46,17 @@ export const getUserPosts = async (req, res) => {
   }
 };
 
+export const getLikedPosts = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const posts = await Post.find({ "likes.userId": userId });
+    res.status(200).json(posts);
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
+};
+
+
 /* UPDATE */
 export const likePost = async (req, res) => {
   try {
@@ -71,3 +82,42 @@ export const likePost = async (req, res) => {
     res.status(404).json({ message: err.message });
   }
 };
+
+
+/* CREATE COMMENT */
+export const addComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, firstName, lastName, comment } = req.body;
+    const post = await Post.findById(id);
+    const newComment = {
+      userId,
+      firstName,
+      lastName,
+      comment,
+    };
+    post.comments.push(newComment);
+    const updatedPost = await post.save();
+    res.status(200).json(updatedPost);
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
+};
+
+export const getComments = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    const comments = post.comments;
+    console.log('115', comments);
+    return res.status(200).json({ comments });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
+
