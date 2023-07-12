@@ -4,6 +4,11 @@ import Form from "./Form";
 const LoginPage = () => {
   const theme = useTheme();
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
+  
+  const handleNotRegistered = () => {
+    alert("You are not registered; please register to use the app");
+  };
+
   return (
     <Box>
       <Box
@@ -27,7 +32,7 @@ const LoginPage = () => {
         <Typography fontWeight="500" variant="h5" sx={{ mb: "1.5rem" }}>
           Welcome to Yarn, yarn your mind!!!
         </Typography>
-        <Form />
+        <Form onNotRegistered={handleNotRegistered} /> {/* Pass the handleNotRegistered function as a prop */}
       </Box>
     </Box>
   );

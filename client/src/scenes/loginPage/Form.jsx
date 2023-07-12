@@ -49,6 +49,7 @@ const initialValuesLogin = {
 const Form = () => {
   const [pageType, setPageType] = useState("login");
   const [registrationCompleted, setRegistrationCompleted] = useState(false);
+  const [notRegistered, setNotRegistered] = useState(false);
   const { palette } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -93,7 +94,8 @@ const Form = () => {
     );
     const loggedIn = await loggedInResponse.json();
     onSubmitProps.resetForm();
-    if (loggedIn) {
+
+    if (loggedIn.user) {
       dispatch(
         setLogin({
           user: loggedIn.user,
@@ -101,6 +103,11 @@ const Form = () => {
         })
       );
       navigate("/home");
+    } else {
+      setNotRegistered(true);
+      setTimeout(() => {
+        setNotRegistered(false);
+      }, 5000);
     }
   };
 
@@ -136,6 +143,19 @@ const Form = () => {
               }}
             >
               You don register: Oya Login
+            </Box>
+          )}
+
+          {notRegistered && (
+            <Box
+              sx={{
+                backgroundColor: "red",
+                color: "white",
+                padding: "1rem",
+                marginBottom: "1rem",
+              }}
+            >
+              You never register; sign up make you fit login
             </Box>
           )}
 
