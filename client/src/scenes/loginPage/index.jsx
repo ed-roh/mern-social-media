@@ -4,6 +4,11 @@ import Form from "./Form";
 const LoginPage = () => {
   const theme = useTheme();
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
+  
+  const handleNotRegistered = () => {
+    alert("You are not registered; please register to use the app");
+  };
+
   return (
     <Box>
       <Box
@@ -13,7 +18,7 @@ const LoginPage = () => {
         textAlign="center"
       >
         <Typography fontWeight="bold" fontSize="32px" color="primary">
-          Sociopedia
+          Yarn
         </Typography>
       </Box>
 
@@ -25,9 +30,9 @@ const LoginPage = () => {
         backgroundColor={theme.palette.background.alt}
       >
         <Typography fontWeight="500" variant="h5" sx={{ mb: "1.5rem" }}>
-          Welcome to Socipedia, the Social Media for Sociopaths!
+          Welcome to Yarn, yarn your mind!!!
         </Typography>
-        <Form />
+        <Form onNotRegistered={handleNotRegistered} /> {/* Pass the handleNotRegistered function as a prop */}
       </Box>
     </Box>
   );
