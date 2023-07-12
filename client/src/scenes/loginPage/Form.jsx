@@ -155,7 +155,7 @@ const Form = () => {
                 marginBottom: "1rem",
               }}
             >
-              You never register; sign up make you fit login
+              Na wrong credentials you dey try use login; sign up/use korrect password make you fit login
             </Box>
           )}
 
