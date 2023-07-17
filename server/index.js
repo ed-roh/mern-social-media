@@ -1,4 +1,5 @@
 import express from "express";
+import http from "http"
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -14,6 +15,7 @@ import postRoutes from "./routes/posts.js";
 import { register } from "./controllers/auth.js";
 import { createPost } from "./controllers/posts.js";
 import { verifyToken } from "./middleware/auth.js";
+import { Server } from "socket.io";
 import User from "./models/User.js";
 import Post from "./models/Post.js";
 import { users, posts } from "./data/index.js";
@@ -23,6 +25,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config();
 const app = express();
+const server = http.createServer(app)
+
+//creating an io instance
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+  }
+})
+
 app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -52,6 +63,33 @@ app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
 
+
+/* SOCKET IO SETUP */
+io.on('connection', (socket) => {
+
+  socket.on("new-user", (userId)=>{
+    addNewUser(socket.id, userId)
+    console.log("new user")
+  })
+
+  socket.on('disconnect', () => {
+    removeUser(socket.id)
+    console.log('user disconnected');
+  });
+});
+
+// functions used by socket io
+let onlienUsers = [];
+const addNewUser = (socketId, userId)=>{
+  !onlienUsers.some(el=> el.userId === userId) && onlienUsers.push({socketId, userId});
+}
+const removeUser = (socketId) => {
+  onlienUsers = onlienUsers.filter(el=> el.socketId !== socketId);
+}
+const getOnlineUser = (userId)=>{
+  return onlienUsers.find(el=> el.userId === userId);
+}
+
 /* MONGOOSE SETUP */
 const PORT = process.env.PORT || 6001;
 mongoose
@@ -60,7 +98,7 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
+    server.listen(PORT, () => console.log(`Server Port: ${PORT}`));
 
     /* ADD DATA ONE TIME */
     // User.insertMany(users);

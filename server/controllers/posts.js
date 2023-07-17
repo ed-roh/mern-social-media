@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Post from "../models/Post.js";
 import User from "../models/User.js";
 
@@ -77,10 +78,41 @@ export const commentPost = async (req, res)=>{
     const { id } = req.params
     const { userId, commentText } = req.body;
     const post = await Post.findById(id);
-    post.comments.push({userId, commentText})
+    post.comments.push({_id: new mongoose.Types.ObjectId(),userId, commentText})
     
     const updatePost = await Post.findByIdAndUpdate(id, {comments:post.comments}, {new:true});
     res.status(200).json(updatePost);
+  } catch (err) {
+    res.status(404).json({message:err.message})
+  }
+}
+
+export const deleteComment = async (req, res)=>{
+  try {
+    const {id} = req.params;
+    const {loggedInUserId, commentId} = req.body;
+    const post = await Post.findById(id)
+    post.comments = post.comments.filter(comment => {
+      return comment._id.toString() !== commentId
+    });
+
+    const updatePost = await Post.findByIdAndUpdate(id, {comments:post.comments}, {new:true})
+    res.status(200).json(updatePost);
+    
+  } catch (error) {
+    res.status(404).json({message:err.message})
+  }
+}
+
+export const deletePost = async (req, res)=>{
+  try {
+    const {id} = req.params;
+    const {loggedInUserId, postUserId} = req.body;
+    console.log(">>>>>",loggedInUserId, postUserId)
+    if(loggedInUserId !== postUserId) return res.status(401).json({message:"unauthorized action"});
+    const deleted = await Post.findByIdAndDelete(id);
+    const posts = await Post.find();
+    res.status(200).json(posts)
   } catch (err) {
     res.status(404).json({message:err.message})
   }

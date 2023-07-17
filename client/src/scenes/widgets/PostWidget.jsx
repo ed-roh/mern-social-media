@@ -7,6 +7,8 @@ import {
 } from "@mui/icons-material";
 import { Box, Divider, IconButton, InputBase, Typography, useTheme } from "@mui/material";
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import FlexBetween from "components/FlexBetween";
 import Friend from "components/Friend";
 import WidgetWrapper from "components/WidgetWrapper";
@@ -24,19 +26,21 @@ const PostWidget = ({
   userPicturePath,
   likes,
   comments,
+  getPosts
 }) => {
   const [isComments, setIsComments] = useState(false);
   const [commentValue, setCommentValue] = useState('')
+  const [seeMore, setSeeMore] = useState(false)
   const dispatch = useDispatch();
   const token = useSelector((state) => state.token);
   const users = useSelector((state) => state.users)
   const loggedInUserId = useSelector((state) => state.user._id);
 
-  
+
   const isLiked = Boolean(likes[loggedInUserId]);
   const likeCount = Object.keys(likes).length;
-  
-  
+
+
   const { palette } = useTheme();
   const main = palette.neutral.main;
   const medium = palette.neutral.medium;
@@ -56,19 +60,46 @@ const PostWidget = ({
     dispatch(setPost({ post: updatedPost }));
   };
 
-  const AddComment = async()=>{
+  const AddComment = async () => {
     const response = await fetch(`http://localhost:3001/posts/${postId}/comment`, {
-      method:"PATCH",
-      headers:{
-        Authorization:`Bearer ${token}`,
-        "Content-Type":"application/json"
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({userId:loggedInUserId, commentText:commentValue})
+      body: JSON.stringify({ userId: loggedInUserId, commentText: commentValue })
     })
     const updatedPost = await response.json();
     // console.log("comm",updatedPost)
-    dispatch(setPost({post:updatedPost}))
+    dispatch(setPost({ post: updatedPost }))
     setCommentValue('')
+  }
+
+  const handleCommentDelete = async (commentId) => {
+    const response = await fetch(`http://localhost:3001/posts/${postId}/delete-comment`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ loggedInUserId, commentId })
+    })
+    const updatedPost = await response.json();
+    dispatch(setPost({ post: updatedPost }))
+  }
+
+  const handleDeletePost = async ()=>{
+    const response = await fetch(`http://localhost:3001/posts/${postId}/delete-post`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ loggedInUserId, postUserId })
+    })
+    const updatedPost = await response.json();
+    // dispatch(setPost({ post: updatedPost }))
+    getPosts();
   }
 
   const handleOnOpenComment = () => {
@@ -117,9 +148,18 @@ const PostWidget = ({
           </FlexBetween>
         </FlexBetween>
 
-        <IconButton>
+        <FlexBetween gap='0.3rem'>
+          {loggedInUserId===postUserId?
+          <><IconButton onClick={()=> handleDeletePost()}>
+            <DeleteRoundedIcon />
+          </IconButton>
+          <IconButton>
+            <ShareOutlined />
+          </IconButton> </>:
+          <IconButton>
           <ShareOutlined />
-        </IconButton>
+        </IconButton>}
+        </FlexBetween>
       </FlexBetween>
       {isComments && (
 
@@ -140,12 +180,23 @@ const PostWidget = ({
           {comments.map((comment, i) => (
             <Box key={`${name}-${i}`}>
               <Divider />
-              <Typography sx={{ color: main, m: "0.5rem 0", pl: "1rem", wordBreak:'break-word' }}>
-                <Typography color={medium}>{
-                users.find(user => user._id === comment.userId)?.firstName +" "+
-                users.find(user => user._id === comment.userId)?.lastName
-                }</Typography><Typography color={main}>{comment.commentText}</Typography>
-              </Typography>
+              <FlexBetween>
+                <Typography sx={{ color: main, m: "0.5rem 0", pl: "1rem", wordBreak: 'break-word' }}>
+                  <Typography color={medium}>{
+                    users.find(user => user._id === comment.userId)?.firstName + " " +
+                    users.find(user => user._id === comment.userId)?.lastName
+                  }</Typography><Typography color={main}>{
+                    comment.commentText.length < 150 ? comment.commentText :
+                      <>{seeMore ? comment.commentText : comment.commentText.slice(0, 100) + "..."} <span
+                        style={{ color: 'blue', textDecoration: "underline", cursor: 'pointer' }}
+                        onClick={() => setSeeMore(!seeMore)}> {!seeMore ? ">See more" : "<See less"} </span></>
+                  }</Typography>
+                </Typography>
+                {comment.userId === loggedInUserId ?
+                  <IconButton onClick={() => handleCommentDelete(comment._id)}>
+                    <DeleteOutlineIcon fontSize="small" />
+                  </IconButton> : ""}
+              </FlexBetween>
             </Box>
           ))}
           <Divider />

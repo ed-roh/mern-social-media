@@ -6,14 +6,25 @@ import MyPostWidget from "scenes/widgets/MyPostWidget";
 import PostsWidget from "scenes/widgets/PostsWidget";
 import AdvertWidget from "scenes/widgets/AdvertWidget";
 import FriendListWidget from "scenes/widgets/FriendListWidget";
+import {io} from "socket.io-client"
+import { useEffect, useState } from "react";
+import { config } from "../../config";
 
 const HomePage = () => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
   const { _id, picturePath } = useSelector((state) => state.user);
+  const [socket, setSocket] = useState(null)
+  useEffect(()=>{
+    setSocket(io(`http://${config.host}:${config.port}`))
+  },[])
+
+  useEffect(()=>{
+    socket?.emit("new-user", _id)
+  },[socket, _id])
 
   return (
     <Box>
-      <Navbar />
+      <Navbar socket={socket} />
       <Box
         width="100%"
         padding="2rem 6%"
@@ -29,7 +40,7 @@ const HomePage = () => {
           mt={isNonMobileScreens ? undefined : "2rem"}
         >
           <MyPostWidget picturePath={picturePath} />
-          <PostsWidget userId={_id} />
+          <PostsWidget userId={_id} socket={socket} />
         </Box>
         {isNonMobileScreens && (
           <Box flexBasis="26%">
