@@ -26,7 +26,8 @@ const PostWidget = ({
   userPicturePath,
   likes,
   comments,
-  getPosts
+  getPosts,
+  socket
 }) => {
   const [isComments, setIsComments] = useState(false);
   const [commentValue, setCommentValue] = useState('')
@@ -57,7 +58,10 @@ const PostWidget = ({
     });
     const updatedPost = await response.json();
     // console.log("like",updatedPost)
+    const userLikedId = Object.keys(updatedPost.likes)?.find(id => id===loggedInUserId)
+    if(userLikedId) handleNotification(1);
     dispatch(setPost({ post: updatedPost }));
+    
   };
 
   const AddComment = async () => {
@@ -72,6 +76,7 @@ const PostWidget = ({
     const updatedPost = await response.json();
     // console.log("comm",updatedPost)
     dispatch(setPost({ post: updatedPost }))
+    handleNotification(2)
     setCommentValue('')
   }
 
@@ -100,6 +105,14 @@ const PostWidget = ({
     const updatedPost = await response.json();
     // dispatch(setPost({ post: updatedPost }))
     getPosts();
+  }
+
+  const handleNotification = (notiType)=>{
+    socket.emit("send-notification", {
+      senderId: loggedInUserId,
+      receiverId: postUserId,
+      type:notiType
+    })
   }
 
   const handleOnOpenComment = () => {

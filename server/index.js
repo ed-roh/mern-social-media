@@ -72,6 +72,12 @@ io.on('connection', (socket) => {
     console.log("new user")
   })
 
+  socket.on("send-notification", async ({senderId, receiverId, type})=>{
+    const receiver = getOnlineUser(receiverId)
+    const user = await User.findById(senderId)
+    io.to(receiver.socketId).emit("get-notification", {userName:user.firstName, type})
+  })
+
   socket.on('disconnect', () => {
     removeUser(socket.id)
     console.log('user disconnected');

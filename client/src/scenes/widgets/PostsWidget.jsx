@@ -4,6 +4,7 @@ import { setPosts, setUsers } from "state";
 import PostWidget from "./PostWidget";
 import { config } from "../../config";
 const SERVER_URL_ENDPOINT = `http://${config.host}:${config.port}`
+
 const PostsWidget = ({ userId, socket, isProfile = false }) => {
   const dispatch = useDispatch();
   const posts = useSelector((state) => state.posts);
@@ -74,6 +75,7 @@ const PostsWidget = ({ userId, socket, isProfile = false }) => {
             likes={likes}
             comments={comments}
             getPosts={getPosts}
+            socket={socket}
           />
         )
       )}
