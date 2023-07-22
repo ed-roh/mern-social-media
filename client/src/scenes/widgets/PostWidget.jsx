@@ -127,6 +127,9 @@ const PostWidget = ({
         name={name}
         subtitle={location}
         userPicturePath={userPicturePath}
+        socket={socket}
+        loggedInUserId={loggedInUserId}
+        postUserId={postUserId}
       />
       <Typography color={main} sx={{ mt: "1rem" }}>
         {description}

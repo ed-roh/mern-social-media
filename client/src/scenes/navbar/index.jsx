@@ -25,7 +25,7 @@ import {
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { setMode, setLogout } from "state";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import FlexBetween from "components/FlexBetween";
 
 const Navbar = ({socket}) => {
@@ -61,14 +61,16 @@ const Navbar = ({socket}) => {
   const displayNotification = ({userName, type})=>{
     let action;
     if(type===1){
-      action = " liked";
+      action = `${userName} liked your post`;
     }else if(type===2){
-      action = " commented on";
+      action = `${userName} commented your post`;
+    }else if(type === 3){
+      action = `${userName} added you as his friend`
     }
     return (
       <>
       <Divider/>
-      <Typography sx={{p:2}} color={main}>{userName}{action} your post</Typography>
+      <Typography sx={{p:2}} color={main}>{action}</Typography>
       </>
     )
   }
@@ -122,10 +124,14 @@ const Navbar = ({socket}) => {
               <LightMode sx={{ color: dark, fontSize: "25px" }} />
             )}
           </IconButton>
-          <Message sx={{ fontSize: "25px" }} />
-            <IconButton>
+            <Link style={{textDecoration:"none", color:"white"}} to='/messenger'>
+              <IconButton >
+                  <Message sx={{ fontSize: "25px" }} />
+              </IconButton>
+            </Link>
+            <IconButton onClick={(e) => handleClick(e)}>
               <Badge badgeContent={newNotiCounts} color="primary">
-                  <Notifications onClick={(e) => handleClick(e)} sx={{ fontSize: "25px" }} />
+                  <Notifications sx={{ fontSize: "25px" }} />
               </Badge>
             </IconButton>
 

@@ -1,17 +1,18 @@
-import { PersonAddOutlined, PersonRemoveOutlined } from "@mui/icons-material";
+import { PersonAddOutlined, PersonRemoveOutlined, Message } from "@mui/icons-material";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { setFriends } from "state";
+import { setConvs, setFriends } from "state";
 import FlexBetween from "./FlexBetween";
 import UserImage from "./UserImage";
 
-const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
+const Friend = ({ friendId, name, subtitle, userPicturePath, socket, loggedInUserId, postUserId }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { _id } = useSelector((state) => state.user);
   const token = useSelector((state) => state.token);
   const friends = useSelector((state) => state.user.friends);
+  const convs = useSelector(state=>state.convs)
 
   const { palette } = useTheme();
   const primaryLight = palette.primary.light;
@@ -33,13 +34,41 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
       }
     );
     const data = await response.json();
+    const isFrnd = data.find(frnd=> frnd._id === friendId)
+    if(isFrnd) handleNotification(3)
     dispatch(setFriends({ friends: data }));
   };
+
+  const handleNotification = (notiType)=>{
+    socket.emit("send-notification", {
+      senderId: loggedInUserId,
+      receiverId: postUserId,
+      type:notiType
+    })
+  }
+
+  const startConversation = async()=>{
+    const response = await fetch(
+      `http://localhost:3001/conversations/`,
+      {
+          method:"POST",
+          body:JSON.stringify({senderId:loggedInUserId, receiverId:friendId}),
+          headers:{
+              "Content-Type":"application/json",
+              Authorization: `Bearer ${token}` 
+          }
+      }
+  );
+    const data = await response.json();
+    // const currConvs = [...convs];
+    // currConvs.push(data)
+    // dispatch(setConvs(currConvs))
+  }
 
   return (
     <FlexBetween>
       <FlexBetween gap="1rem">
-        <UserImage image={userPicturePath} size="55px" />
+        <UserImage image={userPicturePath} size="40px" />
         <Box
           onClick={() => {
             navigate(`/profile/${friendId}`);
@@ -64,16 +93,26 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
           </Typography>
         </Box>
       </FlexBetween>
+      <FlexBetween gap="5px">
+
       <IconButton
         onClick={() => patchFriend()}
-        sx={{ backgroundColor: primaryLight, p: "0.6rem" }}
+        sx={{ backgroundColor: primaryLight, p: "0.3rem" }}
       >
         {isFriend ? (
           <PersonRemoveOutlined sx={{ color: primaryDark }} />
+          
         ) : (
           <PersonAddOutlined sx={{ color: primaryDark }} />
         )}
       </IconButton>
+      <IconButton
+      sx={{ backgroundColor: primaryLight, p: "0.2rem" }}
+      onClick={()=> startConversation()}
+      >
+      <Message sx={{ fontSize: "25px" }} />
+      </IconButton>
+      </FlexBetween>
     </FlexBetween>
   );
 };

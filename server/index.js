@@ -19,6 +19,8 @@ import { Server } from "socket.io";
 import User from "./models/User.js";
 import Post from "./models/Post.js";
 import { users, posts } from "./data/index.js";
+import conversationRouter from './routes/conversations.js'
+import messageRouter from './routes/messages.js'
 
 /* CONFIGURATIONS */
 const __filename = fileURLToPath(import.meta.url);
@@ -62,6 +64,8 @@ app.post("/posts", verifyToken, upload.single("picture"), createPost);
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
+app.use("/conversations", conversationRouter)
+app.use("/messages", messageRouter)
 
 
 /* SOCKET IO SETUP */
@@ -76,6 +80,13 @@ io.on('connection', (socket) => {
     const receiver = getOnlineUser(receiverId)
     const user = await User.findById(senderId)
     io.to(receiver.socketId).emit("get-notification", {userName:user.firstName, type})
+  })
+
+  socket.on("send-message", ({receiverId, data})=>{
+    console.log("online>>>>",onlienUsers) 
+    const receiver = getOnlineUser(receiverId)
+    if(!receiver) return
+    io.to(receiver.socketId).emit("get-message", data)
   })
 
   socket.on('disconnect', () => {

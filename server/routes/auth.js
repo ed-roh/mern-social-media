@@ -1,7 +1,7 @@
 import express from "express";
+const router = express.Router();
 import { login } from "../controllers/auth.js";
 
-const router = express.Router();
 
 router.post("/login", login);
 
