@@ -108,7 +108,7 @@ export const deletePost = async (req, res)=>{
   try {
     const {id} = req.params;
     const {loggedInUserId, postUserId} = req.body;
-    console.log(">>>>>",loggedInUserId, postUserId)
+    // console.log(">>>>>",loggedInUserId, postUserId)
     if(loggedInUserId !== postUserId) return res.status(401).json({message:"unauthorized action"});
     const deleted = await Post.findByIdAndDelete(id);
     const posts = await Post.find();

@@ -30,9 +30,10 @@ const app = express();
 const server = http.createServer(app)
 
 //creating an io instance
+const clientURL=process.env.CLIENT_URL
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "*",
   }
 })
 
@@ -73,7 +74,7 @@ io.on('connection', (socket) => {
 
   socket.on("new-user", (userId)=>{
     addNewUser(socket.id, userId)
-    console.log("new user")
+    console.log("new user", onlienUsers)
   })
 
   socket.on("send-notification", async ({senderId, receiverId, type})=>{

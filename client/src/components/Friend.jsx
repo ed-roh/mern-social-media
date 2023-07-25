@@ -9,10 +9,9 @@ import UserImage from "./UserImage";
 const Friend = ({ friendId, name, subtitle, userPicturePath, socket, loggedInUserId, postUserId }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { _id } = useSelector((state) => state.user);
-  const token = useSelector((state) => state.token);
-  const friends = useSelector((state) => state.user.friends);
-  const convs = useSelector(state=>state.convs)
+  const { _id } = useSelector((state) => state.authReducer.user);
+  const token = useSelector((state) => state.authReducer.token);
+  const friends = useSelector((state) => state.authReducer.user.friends);
 
   const { palette } = useTheme();
   const primaryLight = palette.primary.light;
@@ -52,7 +51,7 @@ const Friend = ({ friendId, name, subtitle, userPicturePath, socket, loggedInUse
       `http://localhost:3001/conversations/`,
       {
           method:"POST",
-          body:JSON.stringify({senderId:loggedInUserId, receiverId:friendId}),
+          body:JSON.stringify({senderId:_id, receiverId:friendId}),
           headers:{
               "Content-Type":"application/json",
               Authorization: `Bearer ${token}` 

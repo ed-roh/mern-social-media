@@ -1,24 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import { Box } from '@mui/material';
 import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
+// import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Avatar from '@material-ui/core/Avatar';
 import Fab from '@material-ui/core/Fab';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import Navbar from 'scenes/navbar';
 import { useDispatch, useSelector } from 'react-redux';
 import { config } from "../../config";
-import { setConvs, setMessages } from 'state';
+import { setConvs, setMessages } from 'state/chatSlice';
 import UserImage from 'components/UserImage';
-import { io } from 'socket.io-client';
 
 const URL_ENDPT = `http://${config.host}:${config.port}/`
 
@@ -43,12 +41,12 @@ const useStyles = makeStyles({
     }
 });
 
-const Messenger = ({socket}) => {
+const Messenger = ({ socket }) => {
     const classes = useStyles();
-    const token = useSelector(state => state.token)
-    const user = useSelector(state => state.user)
-    const convs = useSelector(state => state.convs)
-    const messages = useSelector(state => state.messages)
+    const token = useSelector(state => state.authReducer.token)
+    const user = useSelector(state => state.authReducer.user)
+    const convs = useSelector(state => state.chatReducer.convs)
+    const messages = useSelector(state => state.chatReducer.messages)
     const dispatch = useDispatch()
     const [msgInput, setMsgInput] = useState('')
     const [currentConv, setCurrentConv] = useState('')
@@ -80,52 +78,71 @@ const Messenger = ({socket}) => {
         const data = await response.json();
         setCurrentConv(convId)
         dispatch(setMessages(data))
+        chatRef.current.scrollTop = chatRef.current.scrollHeight
+
     }
 
-    const handleSendMsg = async ()=>{
-        if (!msgInput.replace(/\s/g, '')) return;
+    const handleSendMsg = async () => {
+        if (!msgInput.replace(/\s/g, '')) return alert("Write something before sending");
         const response = await fetch(
             `http://localhost:3001/messages/`,
             {
-                method:"POST",
-                body:JSON.stringify({conversationId:currentConv, sender:user._id, text:msgInput}),
-                headers:{
-                    "Content-Type":"application/json",
-                    Authorization: `Bearer ${token}` 
+                method: "POST",
+                body: JSON.stringify({ conversationId: currentConv, sender: user._id, text: msgInput }),
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
                 }
             }
         );
         setMsgInput('')
-        const data=await response.json();
-        const receiverId = (convs.find(conv=> conv._id===currentConv)).members.find(id=>id!==user._id)
-        socket.emit("send-message", {data, receiverId})
+        const data = await response.json();
+        const receiverId = (convs.find(conv => conv._id === currentConv)).members.find(id => id !== user._id)
+        socket.emit("send-message", { data, receiverId })
         const currMsgs = [...messages]
         currMsgs.push(data);
         dispatch(setMessages(currMsgs))
-    }
 
+    }
+    const chatRef = useRef(null)
+
+
+    useEffect(()=>{
+        chatRef.current.scrollTop = chatRef.current.scrollHeight
+    },[convs])
     
     useEffect(() => {
+        if (chatRef.current) {
+            console.log(chatRef.current.scrollHeight)
+            chatRef.current.scrollTop = chatRef.current.scrollHeight;
+        }
+    }, [messages])
+
+    useEffect(() => {
+        socket?.emit("new-user", user._id)
+    }, [socket, user._id])
+
+    useEffect(() => {
         getConversations();
-        socket?.on("get-message",(data)=>{
+        socket?.on("get-message", (data) => {
             const currMsgs = [...messages]
-            currMsgs.push({text:data.text, sender:data.senderId, conversationId:data.conversationId})
+            console.log(messages)
+            currMsgs.push({ text: data.text, sender: data.senderId, conversationId: data.conversationId })
             dispatch(setMessages(currMsgs))
         })
-    }, [])
+    }, [socket, messages])
 
     return (
         <Box>
             <Navbar />
+
             {/* -------------------------friend side bar starts--------------------------- */}
-            <Grid container>
-            </Grid>
             <Grid container component={Paper} className={classes.chatSection}>
                 <Grid item xs={3} className={classes.borderRight500}>
                     <List>
                         <ListItem button key="123">
                             <ListItemIcon>
-                            <UserImage image={user?.picturePath} size="40px" />
+                                <UserImage image={user?.picturePath} size="40px" />
                             </ListItemIcon>
                             <ListItemText primary={`${user.firstName} ${user.lastName}`}></ListItemText>
                         </ListItem>
@@ -143,7 +160,7 @@ const Messenger = ({socket}) => {
                                 const friendObj = user?.friends.find(frnd => frnd._id === frndId)
                                 return (
                                     <ListItem
-                                        style={{backgroundColor:currentConv===conv._id?"#929292":""}}
+                                        style={{ backgroundColor: currentConv === conv._id ? "#929292" : "" }}
                                         button key={friendObj._id + friendObj.firstName}
                                         onClick={() => handleClickToChat(conv._id)}
                                     >
@@ -151,7 +168,7 @@ const Messenger = ({socket}) => {
                                             <UserImage image={friendObj?.picturePath} size="40px" />
                                         </ListItemIcon>
                                         <ListItemText primary={`${friendObj?.firstName} ${friendObj?.lastName}`} />
-                                        <ListItemText secondary="online" align="right"></ListItemText>
+
                                     </ListItem>
                                 )
                             })
@@ -160,34 +177,34 @@ const Messenger = ({socket}) => {
                 </Grid>
 
                 {/* -----------------message container starts ---------------------- */}
-                
+
                 <Grid item xs={9}>
-                    <List className={classes.messageArea}>
+                    <List className={classes.messageArea} ref={chatRef}>
                         {
-                            !currentConv?<h1>No convs</h1>: messages.length !== 0 &&
-                            messages.map(msgObj => {
-                                return (
-                                    <ListItem key={msgObj._id}>
-                                        <Grid container>
-                                            <Grid item xs={12}>
-                                                <ListItemText
-                                                    align={msgObj.sender === user._id ? "right" : "left"}
-                                                    primary={msgObj.text}
-                                                ></ListItemText>
+                            !currentConv ? <h1>No convs</h1> : messages.length !== 0 &&
+                                messages.map(msgObj => {
+                                    return (
+                                        <ListItem key={msgObj._id + msgObj.sender}>
+                                            <Grid container>
+                                                <Grid item xs={12}>
+                                                    <ListItemText
+                                                        align={msgObj.sender === user._id ? "right" : "left"}
+                                                        primary={msgObj.text}
+                                                    ></ListItemText>
+                                                </Grid>
+                                                <Grid item xs={12}>
+                                                    <ListItemText align={msgObj.sender === user._id ? "right" : "left"} secondary="09:30"></ListItemText>
+                                                </Grid>
                                             </Grid>
-                                            <Grid item xs={12}>
-                                                <ListItemText align={msgObj.sender === user._id ? "right" : "left"} secondary="09:30"></ListItemText>
-                                            </Grid>
-                                        </Grid>
-                                    </ListItem>
-                                )
-                            })
+                                        </ListItem>
+                                    )
+                                })
                         }
                     </List>
                     <Divider />
                     <Grid container style={{ padding: '20px' }}>
                         <Grid item xs={11}>
-                            <TextField value={msgInput} onChange={(e)=> setMsgInput(prev=>e.target.value)} id="outlined-basic-email" label="Type Something" fullWidth />
+                            <TextField value={msgInput} onChange={(e) => setMsgInput(prev => e.target.value)} id="outlined-basic-email" label="Type Something" fullWidth />
                         </Grid>
                         <Grid item xs={1} align="right">
                             <Fab color="primary" aria-label="add"

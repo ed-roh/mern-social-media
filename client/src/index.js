@@ -17,9 +17,14 @@ import {
 } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import { PersistGate } from "redux-persist/integration/react";
+import chatReducer from "./state/chatSlice"
 
-const persistConfig = { key: "root", storage, version: 1 };
-const persistedReducer = persistReducer(persistConfig, authReducer);
+const rootReducer = combineReducers({
+  authReducer, chatReducer
+})
+const persistedReducer = persistReducer({
+  key:"root", storage, version:1, whitelist:['authReducer']
+}, rootReducer);
 const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>

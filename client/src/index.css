@@ -8,3 +8,8 @@ body,
   width: 100%;
   font-family: "Rubik", sans-serif;
 }
+
+.navtitle{
+  font-weight:"bold";
+  font-size:"2rem";
+}

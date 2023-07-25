@@ -33,9 +33,9 @@ const PostWidget = ({
   const [commentValue, setCommentValue] = useState('')
   const [seeMore, setSeeMore] = useState(false)
   const dispatch = useDispatch();
-  const token = useSelector((state) => state.token);
-  const users = useSelector((state) => state.users)
-  const loggedInUserId = useSelector((state) => state.user._id);
+  const token = useSelector((state) => state.authReducer.token);
+  const users = useSelector((state) => state.authReducer.users)
+  const loggedInUserId = useSelector((state) => state.authReducer.user._id);
 
 
   const isLiked = Boolean(likes[loggedInUserId]);

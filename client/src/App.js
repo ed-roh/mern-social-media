@@ -10,11 +10,12 @@ import { themeSettings } from "./theme";
 import Messenger from "scenes/Messenger";
 import {io} from "socket.io-client"
 import { config } from "./config";
+import TestComp from "./scenes/TestComp"
 
 function App() {
-  const mode = useSelector((state) => state.mode);
+  const mode = useSelector((state) => state.authReducer.mode);
   const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
-  const isAuth = Boolean(useSelector((state) => state.token));
+  const isAuth = Boolean(useSelector((state) => state.authReducer.token));
   const [socket, setSocket] = useState(null)
 
   useEffect(()=>{
@@ -25,6 +26,7 @@ function App() {
   return (
     <div className="app">
       <BrowserRouter>
+      
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Routes>
@@ -40,6 +42,10 @@ function App() {
             <Route 
               path="/messenger"
               element={isAuth ? <Messenger socket={socket} /> : <Navigate to="/" />}
+            />
+            <Route 
+              path="/test"
+              element={isAuth ? <TestComp socket={socket} /> : <Navigate to="/" />}
             />
           </Routes>
         </ThemeProvider>

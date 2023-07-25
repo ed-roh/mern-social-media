@@ -45,7 +45,7 @@ const Navbar = ({socket}) => {
   const [newNotiCounts, setNewNotiCounts] = useState(0)
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const user = useSelector((state) => state.user);
+  const user = useSelector((state) => state.authReducer.user);
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
 
   const theme = useTheme();
@@ -87,6 +87,7 @@ const Navbar = ({socket}) => {
       <FlexBetween gap="1.75rem">
         <Typography
           fontWeight="bold"
+          // fontSize="clamp(1rem, 2rem, 2.25rem)"
           fontSize="clamp(1rem, 2rem, 2.25rem)"
           color="primary"
           onClick={() => navigate("/home")}

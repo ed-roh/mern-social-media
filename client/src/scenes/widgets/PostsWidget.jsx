@@ -7,8 +7,8 @@ const SERVER_URL_ENDPOINT = `http://${config.host}:${config.port}`
 
 const PostsWidget = ({ userId, socket, isProfile = false }) => {
   const dispatch = useDispatch();
-  const posts = useSelector((state) => state.posts);
-  const token = useSelector((state) => state.token);
+  const posts = useSelector((state) => state.authReducer.posts);
+  const token = useSelector((state) => state.authReducer.token);
 
   const getUsers = async () => {
     const resposnse = await fetch(SERVER_URL_ENDPOINT+"/users", {
