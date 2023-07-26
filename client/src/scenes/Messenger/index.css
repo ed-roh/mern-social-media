@@ -1,0 +1,3 @@
+.chat-box::-webkit-scrollbar{
+    display: none;
+}

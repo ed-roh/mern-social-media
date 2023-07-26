@@ -18,6 +18,7 @@ import { config } from "../../config";
 import { setConvs, setMessages } from 'state/chatSlice';
 import UserImage from 'components/UserImage';
 
+
 const URL_ENDPT = `http://${config.host}:${config.port}/`
 
 
@@ -101,7 +102,7 @@ const Messenger = ({ socket }) => {
         socket.emit("send-message", { data, receiverId })
         const currMsgs = [...messages]
         currMsgs.push(data);
-        dispatch(setMessages(currMsgs))
+        dispatch(setMessages(currMsgs));
 
     }
     const chatRef = useRef(null)
@@ -136,8 +137,8 @@ const Messenger = ({ socket }) => {
         <Box>
             <Navbar />
 
-            {/* -------------------------friend side bar starts--------------------------- */}
             <Grid container component={Paper} className={classes.chatSection}>
+            {/* -------------------------friend side bar starts--------------------------- */}
                 <Grid item xs={3} className={classes.borderRight500}>
                     <List>
                         <ListItem button key="123">
@@ -158,9 +159,9 @@ const Messenger = ({ socket }) => {
                             convs.map(conv => {
                                 const frndId = conv.members.find(mem => mem !== user._id)
                                 const friendObj = user?.friends.find(frnd => frnd._id === frndId)
-                                return (
+                                return (<>
                                     <ListItem
-                                        style={{ backgroundColor: currentConv === conv._id ? "#929292" : "" }}
+                                        style={{ backgroundColor: currentConv === conv._id ? "#dfdfdf" : "" }}
                                         button key={friendObj._id + friendObj.firstName}
                                         onClick={() => handleClickToChat(conv._id)}
                                     >
@@ -170,6 +171,8 @@ const Messenger = ({ socket }) => {
                                         <ListItemText primary={`${friendObj?.firstName} ${friendObj?.lastName}`} />
 
                                     </ListItem>
+                                    <Divider />
+                                </>
                                 )
                             })
                         }
@@ -181,22 +184,22 @@ const Messenger = ({ socket }) => {
                 <Grid item xs={9}>
                     <List className={classes.messageArea} ref={chatRef}>
                         {
-                            !currentConv ? <h1>No convs</h1> : messages.length !== 0 &&
+                            !currentConv ? <h1 style={{textAlign:"center"}} >Select a conversation</h1> : messages.length === 0?<h2 style={{textAlign:"center"}}>No messages to preview</h2>:
                                 messages.map(msgObj => {
                                     return (
-                                        <ListItem key={msgObj._id + msgObj.sender}>
-                                            <Grid container>
-                                                <Grid item xs={12}>
-                                                    <ListItemText
-                                                        align={msgObj.sender === user._id ? "right" : "left"}
-                                                        primary={msgObj.text}
-                                                    ></ListItemText>
-                                                </Grid>
-                                                <Grid item xs={12}>
-                                                    <ListItemText align={msgObj.sender === user._id ? "right" : "left"} secondary="09:30"></ListItemText>
-                                                </Grid>
+                                    <ListItem key={msgObj._id + msgObj.sender}>
+                                        <Grid container>
+                                            <Grid item xs={12}>
+                                                <ListItemText
+                                                    align={msgObj.sender === user._id ? "right" : "left"}
+                                                    primary={msgObj.text}
+                                                ></ListItemText>
                                             </Grid>
-                                        </ListItem>
+                                            <Grid item xs={12}>
+                                                <ListItemText align={msgObj.sender === user._id ? "right" : "left"} secondary="09:30"></ListItemText>
+                                            </Grid>
+                                        </Grid>
+                                    </ListItem>
                                     )
                                 })
                         }

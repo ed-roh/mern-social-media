@@ -7,10 +7,9 @@ import { useSelector } from "react-redux";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import { themeSettings } from "./theme";
-import Messenger from "scenes/Messenger";
+import Messenger from "scenes/Messenger/index22";
 import {io} from "socket.io-client"
 import { config } from "./config";
-import TestComp from "./scenes/TestComp"
 
 function App() {
   const mode = useSelector((state) => state.authReducer.mode);
@@ -43,10 +42,7 @@ function App() {
               path="/messenger"
               element={isAuth ? <Messenger socket={socket} /> : <Navigate to="/" />}
             />
-            <Route 
-              path="/test"
-              element={isAuth ? <TestComp socket={socket} /> : <Navigate to="/" />}
-            />
+            
           </Routes>
         </ThemeProvider>
       </BrowserRouter>

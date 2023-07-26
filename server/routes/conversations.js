@@ -4,12 +4,18 @@ const router = express.Router();
  
 // new conversation
 router.post("/", async (req, res)=>{
+    const existingConvs = await Conversation.findOne({
+        members:{$all:[req.body.senderId, req.body.receiverId]}
+    })
+    if(existingConvs){
+        return res.status(200).json({existingConversation:true, _id:existingConvs._id})
+    }
     const newConversation = new Conversation({
         members:[req.body.senderId, req.body.receiverId]
     })
     try {
         const savedConvo = await newConversation.save();
-        res.status(200).json(savedConvo);
+        res.status(200).json({...savedConvo, existingConversation:false});
     } catch (error) {
         res.status(500).json({message:error.message})
     }
