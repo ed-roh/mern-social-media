@@ -1,7 +1,13 @@
 # FullStack Social Media App
 
-Build a COMPLETE Fullstack Responsive MERN App with Auth, Likes, Dark Mode | React, MongoDB, MUI
+## features to add
+- Messenger component
+    - last sent message to be visible below name
+    - input should be disabled when chat is not selected
+    - input should be focused every time after sending message
+    - send message on pressing enter
 
-Video: https://www.youtube.com/watch?v=K8YELRmUb5o
+- Post feed
+    - <s> newest posts should be on top </s> 
+    - make comments likable
 
-For all related questions and discussions about this project, check out the discord: https://discord.gg/2FfPeEk2mX

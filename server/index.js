@@ -74,6 +74,7 @@ io.on('connection', (socket) => {
 
   socket.on("new-user", (userId)=>{
     addNewUser(socket.id, userId)
+    socket.emit("is-online", onlienUsers.map(user=>user.userId))
     console.log("new user", onlienUsers)
   })
 
@@ -92,6 +93,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     removeUser(socket.id)
+    socket.emit("is-online", onlienUsers.map(user=>user.userId))
     console.log('user disconnected');
   });
 });

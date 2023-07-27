@@ -24,6 +24,7 @@ const PostsWidget = ({ userId, socket, isProfile = false }) => {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await response.json();
+    data.reverse()
     dispatch(setPosts({ posts: data }));
   };
 

@@ -30,6 +30,7 @@ const Messenger = ({ socket }) => {
     const [msgInput, setMsgInput] = useState('')
     const [currentConv, setCurrentConv] = useState('')
     const rippleRef = useRef(null)
+    const [onlineUsers, setOnlineUsers] = useState([]) 
 
     const getConversations = async () => {
         try {
@@ -88,7 +89,6 @@ const Messenger = ({ socket }) => {
 
     useEffect(()=>{
         const queryParams = window.location.search?.split("=")[1]
-        console.log("query", queryParams)
         if(queryParams){
             handleClickToChat(queryParams)
         }
@@ -100,20 +100,21 @@ const Messenger = ({ socket }) => {
 
     useEffect(() => {
         if (chatRef.current) {
-            console.log(chatRef.current.scrollHeight)
             chatRef.current.scrollTop = chatRef.current.scrollHeight;
         }
     }, [messages])
 
     useEffect(() => {
         socket?.emit("new-user", user._id)
+        socket?.on("is-online", (userIds)=>{
+            setOnlineUsers(userIds)
+        })
     }, [socket, user._id])
 
     useEffect(() => {
         getConversations();
         socket?.on("get-message", (data) => {
             const currMsgs = [...messages]
-            console.log(messages)
             currMsgs.push({ text: data.text, sender: data.senderId, conversationId: data.conversationId })
             dispatch(setMessages(currMsgs))
         })
@@ -153,6 +154,7 @@ const Messenger = ({ socket }) => {
                                                 <FlexBetween gap="1rem">
                                                     <UserImage image={friendObj?.picturePath} size="40px" />
                                                     <Box>
+                                                    
                                                         <Typography
                                                         variant="h6"
                                                         color={dark}
@@ -163,13 +165,19 @@ const Messenger = ({ socket }) => {
                                                             cursor: "pointer",
                                                           },
                                                         }}
+                                                        
                                                         >
-                                                            {friendObj?.firstName} {friendObj?.lastName}
-                                                        </Typography>
+                                                            {friendObj?.firstName} {friendObj?.lastName} 
+                                                            <img 
+                                                            style={{
+                                                                filter:onlineUsers.includes(frndId)?"":"invert(50%)", marginLeft:"0.45rem"}} src="/assets/online.png" width="12px" alt="" />
+                                                        </Typography>  
+                                                        
                                                         <Typography 
                                                             
                                                         color={medium}>Social Network</Typography>
                                                     </Box>
+                                                    
                                                 </FlexBetween>
                                             </FlexBetween>
                                             <TouchRipple ref={rippleRef} />

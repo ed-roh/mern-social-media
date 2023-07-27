@@ -114,7 +114,6 @@ const Messenger = ({ socket }) => {
     
     useEffect(() => {
         if (chatRef.current) {
-            console.log(chatRef.current.scrollHeight)
             chatRef.current.scrollTop = chatRef.current.scrollHeight;
         }
     }, [messages])
@@ -127,7 +126,6 @@ const Messenger = ({ socket }) => {
         getConversations();
         socket?.on("get-message", (data) => {
             const currMsgs = [...messages]
-            console.log(messages)
             currMsgs.push({ text: data.text, sender: data.senderId, conversationId: data.conversationId })
             dispatch(setMessages(currMsgs))
         })

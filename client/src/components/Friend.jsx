@@ -60,11 +60,7 @@ const Friend = ({ friendId, name, subtitle, userPicturePath, socket, loggedInUse
   );
     
     const data = await response.json();
-    console.log(data)
-    // const currConvs = [...convs];
-    // currConvs.push(data)
-    // dispatch(setConvs(currConvs))
-    // if(data.existingConversation){
+ 
     let id = null
     if(!data.existingConversation){
       id=data._doc._id
@@ -75,7 +71,6 @@ const Friend = ({ friendId, name, subtitle, userPicturePath, socket, loggedInUse
       pathname:'/messenger',
       search:"?convId="+id
     })
-    // }
   }
 
   return (
