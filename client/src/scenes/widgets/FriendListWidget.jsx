@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setFriends } from "state";
 
-const FriendListWidget = ({ userId }) => {
+const FriendListWidget = ({ userId, handleClickToChat=null }) => {
   const dispatch = useDispatch();
   const { palette } = useTheme();
   const token = useSelector((state) => state.authReducer.token);
@@ -45,6 +45,7 @@ const FriendListWidget = ({ userId }) => {
             name={`${friend.firstName} ${friend.lastName}`}
             subtitle={friend.occupation}
             userPicturePath={friend.picturePath}
+            handleClickToChat={handleClickToChat}
           />
         ))}
       </Box>

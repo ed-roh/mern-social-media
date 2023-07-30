@@ -10,6 +10,7 @@ import { config } from "../../config";
 import { setConvs, setMessages } from 'state/chatSlice';
 import UserImage from 'components/UserImage';
 import TouchRipple from '@mui/material/ButtonBase/TouchRipple';
+import FriendListWidget from 'scenes/widgets/FriendListWidget';
 const URL_ENDPT = `http://${config.host}:${config.port}/`
 
 const Messenger = ({ socket }) => {
@@ -33,6 +34,7 @@ const Messenger = ({ socket }) => {
     const [onlineUsers, setOnlineUsers] = useState([]) 
 
     const getConversations = async () => {
+        console.log("gett")
         try {
             const response = await fetch(
                 `${URL_ENDPT}conversations/${user._id}`,
@@ -63,10 +65,11 @@ const Messenger = ({ socket }) => {
 
     }
 
+
     const handleSendMsg = async () => {
         if (!msgInput.replace(/\s/g, '')) return alert("Write something before sending");
         const response = await fetch(
-            `http://localhost:3001/messages/`,
+            `http://localhost:3001/messages/${currentConv}`,
             {
                 method: "POST",
                 body: JSON.stringify({ conversationId: currentConv, sender: user._id, text: msgInput }),
@@ -87,12 +90,26 @@ const Messenger = ({ socket }) => {
     }
     const chatRef = useRef(null)
 
+    useEffect(() => {
+        getConversations();
+        console.log("hi")
+        socket?.on("get-message", (data) => {
+            const currMsgs = [...messages]
+            currMsgs.push({ text: data.text, sender: data.senderId, conversationId: data.conversationId })
+            dispatch(setMessages(currMsgs))
+        })
+    }, [socket, messages])
+
     useEffect(()=>{
         const queryParams = window.location.search?.split("=")[1]
         if(queryParams){
             handleClickToChat(queryParams)
         }
     },[])
+
+    useEffect(()=>{
+        setMsgInput('')
+    },[currentConv])
 
     useEffect(()=>{
         chatRef.current.scrollTop = chatRef.current.scrollHeight
@@ -111,14 +128,7 @@ const Messenger = ({ socket }) => {
         })
     }, [socket, user._id])
 
-    useEffect(() => {
-        getConversations();
-        socket?.on("get-message", (data) => {
-            const currMsgs = [...messages]
-            currMsgs.push({ text: data.text, sender: data.senderId, conversationId: data.conversationId })
-            dispatch(setMessages(currMsgs))
-        })
-    }, [socket, messages])
+    
 
     return (
         <Box>
@@ -132,14 +142,14 @@ const Messenger = ({ socket }) => {
             >
                 <Box flexBasis={isNonMobileScreens ? "27%" : undefined}>
                     <FlexBetween gap="1rem">
-                        <WidgetWrapper height="70vh" width="30vw">
+                        <WidgetWrapper height="70vh" width="23vw">
                             <Box p="1rem 0">
                                 <Typography fontSize="1rem" color={main} fontWeight="500" mb="1rem">
                                     Active chats
                                 </Typography>
-
+                                {/* <Divider/> */}
                                 {convs.length !== 0 &&
-                                    convs.map(conv => {
+                                    convs?.map(conv => {
                                         const frndId = conv.members.find(mem => mem !== user._id)
                                         const friendObj = user?.friends.find(frnd => frnd._id === frndId)
                                         return (<Box key={friendObj._id + friendObj.firstName}>
@@ -175,7 +185,7 @@ const Messenger = ({ socket }) => {
                                                         
                                                         <Typography 
                                                             
-                                                        color={medium}>Social Network</Typography>
+                                                        color={medium}>{conv.latestText?conv.latestText:""}</Typography>
                                                     </Box>
                                                     
                                                 </FlexBetween>
@@ -189,7 +199,12 @@ const Messenger = ({ socket }) => {
 
                             </Box>
                         </WidgetWrapper>
-                        <WidgetWrapper height="70vh" width="60vw">
+                        <WidgetWrapper height="70vh" width="40vw" style={{
+                            background: "rgb(0,213,250)",
+                            background: "linear-gradient(90deg, rgba(0,213,250,1) 0%, rgba(9,90,121,1) 100%)"
+                            // background: "rgb(0,213,250)",
+                            // background: "linear-gradient(87deg, rgba(0,213,250,1) 0%, rgba(0,89,105,1) 0%, rgba(0,0,0,1) 100%)"
+                        }}>
                             <Box className='chat-box' height="80%" ref={chatRef} sx={{ flexGrow: 1, overflow: "auto", p: 2 }}>
                                 {
                                     !currentConv ? <h1 style={{ textAlign: "center" }} >Select a conversation</h1> : messages.length === 0 ? <h2 style={{ textAlign: "center" }}>No messages to preview</h2> :
@@ -230,14 +245,30 @@ const Messenger = ({ socket }) => {
                                         borderRadius="9px"
                                         gap="3rem"
                                         padding="0.6rem 1.5rem"
+                                        visibility={currentConv?"visible":"hidden"}
                                     >
-                                        <InputBase value={msgInput} onChange={(e) => setMsgInput(prev => e.target.value)} sx={{fontSize:"16px"}} placeholder="Type Something..." fullWidth />
-                                        <IconButton onClick={handleSendMsg}>
+                                        <InputBase value={msgInput} onChange={(e) => setMsgInput(prev => e.target.value)} sx={{fontSize:"16px"}} placeholder="Type Something..." fullWidth
+                                        onKeyDown={
+                                            (e)=>{
+                                                if(e.key==="Enter") handleSendMsg();
+                                            }
+                                        }
+                                        />
+                                        <IconButton onClick={handleSendMsg} >
                                             <Send />
                                         </IconButton>
                                     </FlexBetween>
                                 )}
                             </Box>
+                        </WidgetWrapper>
+                        <WidgetWrapper height="70vh" width="23vw">
+                            
+                                {/* <Box flexBasis="26%" height="70vh" width="20vw"> */}
+                                    <FriendListWidget 
+                                     handleClickToChat={handleClickToChat} 
+                                     userId={user._id}/>
+                                {/* </Box> */}
+                            
                         </WidgetWrapper>
                     </FlexBetween>
                 </Box>

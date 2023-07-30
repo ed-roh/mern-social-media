@@ -44,4 +44,17 @@ router.get("/:userId", async (req, res)=>{
     }
 })
 
+// delete conversation
+router.delete("/:userId/:friendId", async(req,res)=>{
+    const {userId, friendId} = req.params;
+    try {
+        const dlted = await Conversation.deleteOne({
+            members:{$all:[userId, friendId]}
+        })
+        res.send(dlted)
+    } catch (error) {
+        res.status(500).json({message:error.message})
+    }
+})
+
 export default router;

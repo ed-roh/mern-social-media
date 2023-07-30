@@ -4,6 +4,10 @@ const ConversationSchema = mongoose.Schema(
   {
     members:{
         type:Array,
+    },
+    latestText:{
+      type:String,
+      default:''
     }
   },
   { timestamps: true }

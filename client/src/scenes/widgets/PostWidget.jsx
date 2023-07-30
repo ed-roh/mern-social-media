@@ -15,6 +15,7 @@ import WidgetWrapper from "components/WidgetWrapper";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setPost } from "state";
+import dayjs from "dayjs";
 
 const PostWidget = ({
   postId,
@@ -26,6 +27,7 @@ const PostWidget = ({
   userPicturePath,
   likes,
   comments,
+  createdAt,
   getPosts,
   socket
 }) => {
@@ -59,7 +61,7 @@ const PostWidget = ({
     const updatedPost = await response.json();
     // console.log("like",updatedPost)
     const userLikedId = Object.keys(updatedPost.likes)?.find(id => id===loggedInUserId)
-    if(userLikedId) handleNotification(1);
+    if(userLikedId && postUserId !== loggedInUserId) handleNotification(1);
     dispatch(setPost({ post: updatedPost }));
     
   };
@@ -76,7 +78,7 @@ const PostWidget = ({
     const updatedPost = await response.json();
     // console.log("comm",updatedPost)
     dispatch(setPost({ post: updatedPost }))
-    handleNotification(2)
+    if(postUserId !== loggedInUserId) handleNotification(2);
     setCommentValue('')
   }
 
@@ -119,6 +121,19 @@ const PostWidget = ({
     setIsComments(!isComments)
 
   }
+  const setPostTimeDiff = (createdAt)=>{
+    const timeIntervalInMilliseconds = dayjs().diff(dayjs(createdAt))
+    const hours = Math.floor(timeIntervalInMilliseconds / 3600000);
+    const minutes = Math.floor((timeIntervalInMilliseconds % 3600000) / 60000);
+    const seconds = Math.floor((timeIntervalInMilliseconds % 60000) / 1000);
+    const formattedTime = `${hours}h ${minutes}m ${seconds}s`;
+    if(hours != 0){
+      return `${hours}h`
+    }else if(hours === 0 && minutes !== 0){
+      return `${minutes}m`
+    }
+    return `${seconds}s`
+  }
 
   return (
     <WidgetWrapper m="2rem 0">
@@ -131,18 +146,21 @@ const PostWidget = ({
         loggedInUserId={loggedInUserId}
         postUserId={postUserId}
       />
+      <Typography sx={{textAlign:"end"}} color={medium} fontSize="0.65rem">{
+        setPostTimeDiff(createdAt)+" ago"
+      }</Typography>
       <Typography color={main} sx={{ mt: "1rem" }}>
         {description}
       </Typography>
       {picturePath && (
         <img
-          width="100%"
-          height="auto"
-          alt="post"
-          style={{ borderRadius: "0.75rem", marginTop: "0.75rem" }}
-          src={`http://localhost:3001/assets/${picturePath}`}
+        width="100%"
+        height="auto"
+        alt="post"
+        style={{ borderRadius: "0.75rem", marginTop: "0.75rem" }}
+        src={`http://localhost:3001/assets/${picturePath}`}
         />
-      )}
+        )}
       <FlexBetween mt="0.25rem">
         <FlexBetween gap="1rem">
           <FlexBetween gap="0.3rem">
@@ -187,7 +205,7 @@ const PostWidget = ({
             gap="3rem"
             padding="0.1rem 1.5rem"
           >
-            <InputBase value={commentValue} onChange={(e) => setCommentValue(e.target.value)} placeholder="Write your comment..." />
+            <InputBase fullWidth value={commentValue} onKeyDown={(e)=> e.key==="Enter"&&AddComment()} onChange={(e) => setCommentValue(e.target.value)} placeholder="Write your comment..." />
             <IconButton disabled={!commentValue} onClick={AddComment}>
               <SendRoundedIcon />
             </IconButton>

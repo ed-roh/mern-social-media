@@ -1,12 +1,17 @@
 import express from "express";
 import Message from "../models/Message.js"
+import Conversation from '../models/Conversation.js'
 const router = express.Router();
  
 // add
-router.post("/", async (req, res)=>{
-    const newMessage = new Message(req.body);
+router.post("/:conversationId", async (req, res)=>{
 
     try {
+        const newMessage = new Message(req.body);
+        const updatedConv = await Conversation.findByIdAndUpdate(req.params.conversationId,
+            {latestText:req.body.text}, {new:true}
+            )
+        console.log(updatedConv)
         const savedMessage = await newMessage.save()
         res.status(200).json(savedMessage)
     } catch (error) {

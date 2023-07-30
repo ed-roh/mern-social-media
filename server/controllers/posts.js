@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Post from "../models/Post.js";
 import User from "../models/User.js";
+import dayjs from "dayjs"
 
 /* CREATE */
 export const createPost = async (req, res) => {
@@ -31,6 +32,7 @@ export const createPost = async (req, res) => {
 export const getFeedPosts = async (req, res) => {
   try {
     const post = await Post.find();
+    
     res.status(200).json(post);
   } catch (err) {
     res.status(404).json({ message: err.message });

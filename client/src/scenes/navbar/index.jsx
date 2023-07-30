@@ -27,6 +27,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setMode, setLogout } from "state";
 import { Link, useNavigate } from "react-router-dom";
 import FlexBetween from "components/FlexBetween";
+import { setSearchValue } from "state/chatSlice";
 
 const Navbar = ({socket}) => {
   const [anchorEl, setAnchorEl] = useState(null)
@@ -45,7 +46,8 @@ const Navbar = ({socket}) => {
   const [newNotiCounts, setNewNotiCounts] = useState(0)
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const user = useSelector((state) => state.authReducer.user);
+  const {user, users} = useSelector((state) => state.authReducer);
+  const {searchValue} = useSelector((state) => state.chatReducer);
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
 
   const theme = useTheme();
@@ -107,12 +109,13 @@ const Navbar = ({socket}) => {
             gap="3rem"
             padding="0.1rem 1.5rem"
           >
-            <InputBase placeholder="Search..." />
+            <InputBase onChange={(e)=> dispatch(setSearchValue(e.target.value))} value={searchValue} placeholder="Search..." />
             <IconButton>
               <Search />
             </IconButton>
           </FlexBetween>
         )}
+        
       </FlexBetween>
 
       {/* DESKTOP NAV */}

@@ -30,13 +30,15 @@ const PostsWidget = ({ userId, socket, isProfile = false }) => {
 
   const getUserPosts = async () => {
     const response = await fetch(
-      `${SERVER_URL_ENDPOINT}/${userId}/posts`,
+      `${SERVER_URL_ENDPOINT}/posts/${userId}/posts`,
       {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       }
     );
     const data = await response.json();
+    // console.log("getuserspost", data)
+    data.reverse()
     dispatch(setPosts({ posts: data }));
   };
 
@@ -63,7 +65,9 @@ const PostsWidget = ({ userId, socket, isProfile = false }) => {
           userPicturePath,
           likes,
           comments,
+          createdAt
         }) => (
+
           <PostWidget
             key={_id}
             postId={_id}
@@ -74,7 +78,8 @@ const PostsWidget = ({ userId, socket, isProfile = false }) => {
             picturePath={picturePath}
             userPicturePath={userPicturePath}
             likes={likes}
-            comments={comments}
+            comments={comments.slice().reverse()}
+            createdAt={createdAt}
             getPosts={getPosts}
             socket={socket}
           />

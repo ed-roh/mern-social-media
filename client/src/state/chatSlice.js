@@ -2,7 +2,9 @@ const { createSlice } = require("@reduxjs/toolkit")
 
 const initialState={
     convs:[],
-    messages:[]
+    messages:[],
+    searchValue:'',
+    socket:null
 }
 
 const chatSlice = createSlice({
@@ -16,9 +18,15 @@ const chatSlice = createSlice({
           },
         setMessages:(state, action)=>{
         state.messages = action.payload;
+        },
+        setSearchValue:(state,action)=>{
+            state.searchValue = action.payload
+        },
+        setSocket:(state, action)=>{
+            state.socket = action.payload
         }
     }
 })
 
-export const {setConvs, setMessages} = chatSlice.actions
+export const {setConvs, setMessages, setSearchValue, setSocket} = chatSlice.actions
 export default chatSlice.reducer;
