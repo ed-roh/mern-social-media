@@ -6,7 +6,7 @@ import { setFriends } from "state";
 import FlexBetween from "./FlexBetween";
 import UserImage from "./UserImage";
 
-const Friend = ({ friendId, name, subtitle, userPicturePath, socket, loggedInUserId, postUserId, handleClickToChat }) => {
+const Friend = ({ friendId, name, subtitle, userPicturePath, socket, loggedInUserId, postUserId, handleClickToChat, isBeingSearched=false }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { _id } = useSelector((state) => state.authReducer.user);
@@ -133,12 +133,14 @@ const Friend = ({ friendId, name, subtitle, userPicturePath, socket, loggedInUse
               <PersonAddOutlined sx={{ color: primaryDark }} />
             )}
           </IconButton>}
-        <IconButton
-          // sx={{ backgroundColor: primaryLight, p: "0.2rem" }}
-          onClick={() => startConversation()}
-        >
-          <Message sx={{ fontSize: "20px" }} />
-        </IconButton>
+        {!isBeingSearched&&
+          <IconButton
+            // sx={{ backgroundColor: primaryLight, p: "0.2rem" }}
+            onClick={() => startConversation()}
+          >
+            <Message sx={{ fontSize: "20px" }} />
+          </IconButton>
+        }
       </FlexBetween>}
     </FlexBetween>
   );

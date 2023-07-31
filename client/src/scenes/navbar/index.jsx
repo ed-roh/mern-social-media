@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Box,
   IconButton,
@@ -28,10 +28,11 @@ import { setMode, setLogout } from "state";
 import { Link, useNavigate } from "react-router-dom";
 import FlexBetween from "components/FlexBetween";
 import { setSearchValue } from "state/chatSlice";
+import SearchDropdownWidget from "scenes/widgets/SearchDropdownWidget";
 
 const Navbar = ({socket}) => {
   const [anchorEl, setAnchorEl] = useState(null)
-
+  
   const handleClick = (event) => {
     setNewNotiCounts(0)
     setAnchorEl(event.currentTarget);
@@ -44,11 +45,13 @@ const Navbar = ({socket}) => {
   const [isMobileMenuToggled, setIsMobileMenuToggled] = useState(false);
   const [notifications, setNotifications] = useState([])
   const [newNotiCounts, setNewNotiCounts] = useState(0)
+  const [isBlurred, setIsBlurred] = useState(true)
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const {user, users} = useSelector((state) => state.authReducer);
   const {searchValue} = useSelector((state) => state.chatReducer);
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
+  const searchRef = useRef(null)
 
   const theme = useTheme();
   const neutralLight = theme.palette.neutral.light;
@@ -76,12 +79,19 @@ const Navbar = ({socket}) => {
       </>
     )
   }
+  
 
   useEffect(()=>{
     socket?.on("get-notification", (noti)=>{
         setNewNotiCounts(prev => prev+1);
         setNotifications(prev=> ([...prev, noti]));
     })
+    searchRef.current.querySelector('input').onblur = ()=>{
+      setIsBlurred(true)
+    }
+    searchRef.current.querySelector('input').onfocus = ()=>{
+      setIsBlurred(false)
+    }
   },[socket])
 
   return (
@@ -100,7 +110,7 @@ const Navbar = ({socket}) => {
             },
           }}
         >
-          Sociopedia
+          Nexus.point
         </Typography>
         {isNonMobileScreens && (
           <FlexBetween
@@ -108,11 +118,15 @@ const Navbar = ({socket}) => {
             borderRadius="9px"
             gap="3rem"
             padding="0.1rem 1.5rem"
+            position="relative"
           >
-            <InputBase onChange={(e)=> dispatch(setSearchValue(e.target.value))} value={searchValue} placeholder="Search..." />
+            <InputBase onChange={(e)=> dispatch(setSearchValue(e.target.value))} value={searchValue} placeholder="Search..." ref={searchRef}/>
             <IconButton>
               <Search />
             </IconButton>
+            { !isBlurred && searchValue && 
+              <SearchDropdownWidget socket={socket} users={users} searchValue={searchValue} userId={user._id} />
+            }
           </FlexBetween>
         )}
         

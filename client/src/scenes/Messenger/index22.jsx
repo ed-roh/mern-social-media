@@ -31,7 +31,7 @@ const Messenger = ({ socket }) => {
     const [msgInput, setMsgInput] = useState('')
     const [currentConv, setCurrentConv] = useState('')
     const rippleRef = useRef(null)
-    const [onlineUsers, setOnlineUsers] = useState([]) 
+    const [onlineUsers, setOnlineUsers] = useState([])
 
     const getConversations = async () => {
         console.log("gett")
@@ -100,20 +100,20 @@ const Messenger = ({ socket }) => {
         })
     }, [socket, messages])
 
-    useEffect(()=>{
+    useEffect(() => {
         const queryParams = window.location.search?.split("=")[1]
-        if(queryParams){
+        if (queryParams) {
             handleClickToChat(queryParams)
         }
-    },[])
+    }, [])
 
-    useEffect(()=>{
+    useEffect(() => {
         setMsgInput('')
-    },[currentConv])
+    }, [currentConv])
 
-    useEffect(()=>{
+    useEffect(() => {
         chatRef.current.scrollTop = chatRef.current.scrollHeight
-    },[convs])
+    }, [convs])
 
     useEffect(() => {
         if (chatRef.current) {
@@ -123,12 +123,12 @@ const Messenger = ({ socket }) => {
 
     useEffect(() => {
         socket?.emit("new-user", user._id)
-        socket?.on("is-online", (userIds)=>{
+        socket?.on("is-online", (userIds) => {
             setOnlineUsers(userIds)
         })
     }, [socket, user._id])
 
-    
+
 
     return (
         <Box>
@@ -156,38 +156,39 @@ const Messenger = ({ socket }) => {
 
                                             <FlexBetween gap="1rem" mt="0.5rem" mb="0.5rem" p="0.5rem" onClick={(e) => handleClickToChat(conv._id)}
                                                 style={{
-                                                    cursor:"pointer",
-                                                    backgroundColor: currentConv === conv._id ? mode==="dark"?"#0A0A0A": "#e7e7e7" : "",
-                                                    borderRadius:"0.75rem"
+                                                    cursor: "pointer",
+                                                    backgroundColor: currentConv === conv._id ? mode === "dark" ? "#0A0A0A" : "#e7e7e7" : "",
+                                                    borderRadius: "0.75rem"
                                                 }}
                                             >
                                                 <FlexBetween gap="1rem">
                                                     <UserImage image={friendObj?.picturePath} size="40px" />
                                                     <Box>
-                                                    
+
                                                         <Typography
-                                                        variant="h6"
-                                                        color={dark}
-                                                        fontWeight="500"
-                                                        sx={{
-                                                          "&:hover": {
-                                                            color: palette.info.light,
-                                                            cursor: "pointer",
-                                                          },
-                                                        }}
-                                                        
+                                                            variant="h6"
+                                                            color={dark}
+                                                            fontWeight="500"
+                                                            sx={{
+                                                                "&:hover": {
+                                                                    color: palette.info.light,
+                                                                    cursor: "pointer",
+                                                                },
+                                                            }}
+
                                                         >
-                                                            {friendObj?.firstName} {friendObj?.lastName} 
-                                                            <img 
-                                                            style={{
-                                                                filter:onlineUsers.includes(frndId)?"":"invert(50%)", marginLeft:"0.45rem"}} src="/assets/online.png" width="12px" alt="" />
-                                                        </Typography>  
-                                                        
-                                                        <Typography 
-                                                            
-                                                        color={medium}>{conv.latestText?conv.latestText:""}</Typography>
+                                                            {friendObj?.firstName} {friendObj?.lastName}
+                                                            <img
+                                                                style={{
+                                                                    filter: onlineUsers.includes(frndId) ? "" : "invert(50%)", marginLeft: "0.45rem"
+                                                                }} src="/assets/online.png" width="12px" alt="" />
+                                                        </Typography>
+
+                                                        <Typography
+
+                                                            color={medium}>{conv.latestText ? conv.latestText : ""}</Typography>
                                                     </Box>
-                                                    
+
                                                 </FlexBetween>
                                             </FlexBetween>
                                             <TouchRipple ref={rippleRef} />
@@ -200,8 +201,9 @@ const Messenger = ({ socket }) => {
                             </Box>
                         </WidgetWrapper>
                         <WidgetWrapper height="70vh" width="40vw" style={{
-                            background: "rgb(0,213,250)",
-                            background: "linear-gradient(90deg, rgba(0,213,250,1) 0%, rgba(9,90,121,1) 100%)"
+                            background: 
+                                mode==="dark"?"radial-gradient(circle, hsla(189, 100%, 24%, 1) 0%, hsla(0, 0%, 0%, 1) 100%)":"radial-gradient(circle, hsla(189, 100%, 49%, 1) 0%, hsla(0, 0%, 100%, 1) 100%)"
+                            // background: "linear-gradient(90deg, rgba(0,213,250,1) 0%, rgba(9,90,121,1) 100%)"
                             // background: "rgb(0,213,250)",
                             // background: "linear-gradient(87deg, rgba(0,213,250,1) 0%, rgba(0,89,105,1) 0%, rgba(0,0,0,1) 100%)"
                         }}>
@@ -216,7 +218,7 @@ const Messenger = ({ socket }) => {
                                                         justifyContent: msgObj.sender === user._id ? "flex-end" : "flex-start",
                                                         mb: 2,
                                                     }}
-                                                    
+
                                                     key={msgObj._id + msgObj.sender}
                                                 >
 
@@ -245,14 +247,14 @@ const Messenger = ({ socket }) => {
                                         borderRadius="9px"
                                         gap="3rem"
                                         padding="0.6rem 1.5rem"
-                                        visibility={currentConv?"visible":"hidden"}
+                                        visibility={currentConv ? "visible" : "hidden"}
                                     >
-                                        <InputBase value={msgInput} onChange={(e) => setMsgInput(prev => e.target.value)} sx={{fontSize:"16px"}} placeholder="Type Something..." fullWidth
-                                        onKeyDown={
-                                            (e)=>{
-                                                if(e.key==="Enter") handleSendMsg();
+                                        <InputBase value={msgInput} onChange={(e) => setMsgInput(prev => e.target.value)} sx={{ fontSize: "16px" }} placeholder="Type Something..." fullWidth
+                                            onKeyDown={
+                                                (e) => {
+                                                    if (e.key === "Enter") handleSendMsg();
+                                                }
                                             }
-                                        }
                                         />
                                         <IconButton onClick={handleSendMsg} >
                                             <Send />
@@ -262,13 +264,11 @@ const Messenger = ({ socket }) => {
                             </Box>
                         </WidgetWrapper>
                         <WidgetWrapper height="70vh" width="23vw">
-                            
-                                {/* <Box flexBasis="26%" height="70vh" width="20vw"> */}
-                                    <FriendListWidget 
-                                     handleClickToChat={handleClickToChat} 
-                                     userId={user._id}/>
-                                {/* </Box> */}
-                            
+
+                            <FriendListWidget
+                                handleClickToChat={handleClickToChat}
+                                userId={user._id} />
+
                         </WidgetWrapper>
                     </FlexBetween>
                 </Box>

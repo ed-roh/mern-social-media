@@ -38,7 +38,7 @@ export const authSlice = createSlice({
       }
     },
     setUsers: (state, action)=>{
-      state.users = action.payload.map(user=> ({_id:user._id, firstName:user.firstName, lastName:user.lastName}))
+      state.users = action.payload.map(user=> ({_id:user._id, firstName:user.firstName, lastName:user.lastName, picturePath:user.picturePath}))
     }
     ,
     setPosts: (state, action) => {
