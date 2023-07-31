@@ -1,13 +1,13 @@
 import { Box, Divider, List, ListItem, Typography } from '@mui/material'
 import WidgetWrapper from 'components/WidgetWrapper'
-import React from 'react'
+import React, { useState } from 'react'
 import Friend from 'components/Friend'
 import Loading from 'components/Loading'
 import { Link } from 'react-router-dom'
 
 const SearchDropdownWidget = ({ users, searchValue, userId, socket }) => {
   
-
+  
   const filterUsersBySearch =()=>{
     const searchedUsers = users.filter(user=> (
       (user.firstName.toLowerCase().includes(searchValue.toLowerCase()) || 
@@ -32,16 +32,9 @@ const SearchDropdownWidget = ({ users, searchValue, userId, socket }) => {
         <List style={{}}>
           { filterUsersBySearch().length === 0? 
           <Loading />:
-            users.filter((user, i)=>{
-              if(i>7) return false;
-              return(
-                (user.firstName.toLowerCase().includes(searchValue.toLowerCase()) || 
-                user.lastName.toLowerCase().includes(searchValue.toLowerCase()))) &&
-                user._id !== userId
-            } 
-            )
+            filterUsersBySearch().slice(0, 5)
             .map(user => {
-               return <ListItem key={`search_results_${user._id}`} sx={{ p: 2 }}>
+               return <Box key={`search_results_${user._id}`} sx={{ p: 2 }}>
                   <Box>
                       <Friend
                         key={user._id}
@@ -54,8 +47,8 @@ const SearchDropdownWidget = ({ users, searchValue, userId, socket }) => {
                         // handleClickToChat={handleClickToChat}
                       />
                   </Box>
-                <Divider />
-                </ListItem>
+                  
+                </Box>
               }
 
             )

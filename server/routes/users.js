@@ -6,8 +6,12 @@ import {
   getUsers,
 } from "../controllers/users.js";
 import { verifyToken } from "../middleware/auth.js";
+import { pushUsersToDB } from "../services/populateUsers.js";
 
 const router = express.Router();
+
+/* WRITE USERS IN BULK */
+router.post("/insert_users", pushUsersToDB)
 
 /* READ */
 router.get("/", verifyToken, getUsers)
