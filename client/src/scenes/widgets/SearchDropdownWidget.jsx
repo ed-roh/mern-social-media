@@ -44,7 +44,6 @@ const SearchDropdownWidget = ({ users, searchValue, userId, socket }) => {
                         userPicturePath={user.picturePath}
                         isBeingSearched={true}
                         socket={socket}
-                        // handleClickToChat={handleClickToChat}
                       />
                   </Box>
                   

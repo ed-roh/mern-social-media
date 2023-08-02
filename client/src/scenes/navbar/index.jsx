@@ -95,7 +95,10 @@ const Navbar = ({socket}) => {
   },[socket])
 
   return (
-    <FlexBetween padding="1rem 6%" backgroundColor={alt}>
+    <FlexBetween padding="1rem 6%" backgroundColor={alt}
+      // boxShadow="2px 2px 8px black"
+      // boxShadow="2px 2px 2px #e0e0e0"
+    >
       <FlexBetween gap="1.75rem">
         <Typography
           fontWeight="bold"

@@ -1,0 +1,19 @@
+.mypost-box::-webkit-scrollbar{
+    display: none;
+}
+
+
+.adv-friend-box::-webkit-scrollbar {
+    width: 6px;               /* width of the entire scrollbar */
+}
+
+.adv-friend-box::-webkit-scrollbar-track {
+    background: rgb(206, 206, 206);
+    border-radius: 20px;
+}
+
+.adv-friend-box::-webkit-scrollbar-thumb {
+    background-color: #a1a1a1;    /* color of the scroll thumb */
+    border-radius: 20px;       /* roundness of the scroll thumb */
+    border: 3px solid #a1a1a1;  /* creates padding around scroll thumb */
+}

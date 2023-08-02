@@ -1,3 +1,4 @@
+import './index.css'
 import { Box, useMediaQuery } from "@mui/material";
 import { useSelector } from "react-redux";
 import Navbar from "scenes/navbar";
@@ -12,20 +13,23 @@ import { useEffect } from "react";
 const HomePage = ({socket}) => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
   const { _id, picturePath } = useSelector((state) => state.authReducer.user);
-  
+  const handleScroll = ()=>{
+    console.log('scrolling...')
+  }
 
   useEffect(()=>{
     socket?.emit("new-user", _id)
   },[socket, _id])
 
   return (
-    <Box>
+    <Box    
+    >
       <Navbar socket={socket} />
       <Box
         width="100%"
         padding="2rem 6%"
         display={isNonMobileScreens ? "flex" : "block"}
-        gap="0.5rem"
+        // gap="0.5rem"
         justifyContent="space-between"
       >
         <Box flexBasis={isNonMobileScreens ? "26%" : undefined}>
@@ -34,12 +38,15 @@ const HomePage = ({socket}) => {
         <Box
           flexBasis={isNonMobileScreens ? "42%" : undefined}
           mt={isNonMobileScreens ? undefined : "2rem"}
+          style={{overflowY:"scroll", height: '100vh'}}
+          className="mypost-box"
         >
           <MyPostWidget picturePath={picturePath} />
           <PostsWidget userId={_id} socket={socket} />
         </Box>
         {isNonMobileScreens && (
-          <Box flexBasis="26%">
+          <Box flexBasis="26%" style={{overflowY:"scroll", height:"100vh"}} 
+            className="adv-friend-box">
             <AdvertWidget />
             <Box m="2rem 0" />
             <FriendListWidget userId={_id} />
