@@ -5,7 +5,7 @@ import PostWidget from "./PostWidget";
 import { config } from "../../config";
 const SERVER_URL_ENDPOINT = `http://${config.host}:${config.port}`
 
-const PostsWidget = ({ userId, socket, isProfile = false }) => {
+const PostsWidget = ({ userId, socket, isProfile = false, setPostTimeDiff }) => {
   const dispatch = useDispatch();
   const posts = useSelector((state) => state.authReducer.posts);
   const token = useSelector((state) => state.authReducer.token);
@@ -82,6 +82,7 @@ const PostsWidget = ({ userId, socket, isProfile = false }) => {
             createdAt={createdAt}
             getPosts={getPosts}
             socket={socket}
+            setPostTimeDiff={setPostTimeDiff}
           />
         )
       )}

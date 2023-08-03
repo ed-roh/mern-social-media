@@ -9,6 +9,7 @@
     - <s>delete conversations on unfollow/unfriend</s>
     - getting notified on message
     - <s>set a chat bg</s>
+    - <s>timestamps on message sent</s>
 
 - Post feed
     - <s> newest posts should be on top </s> 
@@ -17,6 +18,8 @@
     - <s>newest comments should be on top</s>
     - allow other files and audio posts
     - <s> Time duration of posts </s>
+    - add comment on enter
+
 
 - Navbar component
     - <s>search users by name</s>

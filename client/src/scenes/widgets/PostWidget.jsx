@@ -29,7 +29,8 @@ const PostWidget = ({
   comments,
   createdAt,
   getPosts,
-  socket
+  socket,
+  setPostTimeDiff
 }) => {
   const [isComments, setIsComments] = useState(false);
   const [commentValue, setCommentValue] = useState('')
@@ -121,19 +122,7 @@ const PostWidget = ({
     setIsComments(!isComments)
 
   }
-  const setPostTimeDiff = (createdAt)=>{
-    const timeIntervalInMilliseconds = dayjs().diff(dayjs(createdAt))
-    const hours = Math.floor(timeIntervalInMilliseconds / 3600000);
-    const minutes = Math.floor((timeIntervalInMilliseconds % 3600000) / 60000);
-    const seconds = Math.floor((timeIntervalInMilliseconds % 60000) / 1000);
-    const formattedTime = `${hours}h ${minutes}m ${seconds}s`;
-    if(hours != 0){
-      return `${hours}h`
-    }else if(hours === 0 && minutes !== 0){
-      return `${minutes}m`
-    }
-    return `${seconds}s`
-  }
+  
 
   return (
     <WidgetWrapper m="2rem 0">
@@ -147,7 +136,7 @@ const PostWidget = ({
         postUserId={postUserId}
       />
       <Typography sx={{textAlign:"end"}} color={medium} fontSize="0.65rem">{
-        setPostTimeDiff(createdAt)+" ago"
+        setPostTimeDiff(createdAt, "posts")+" ago"
       }</Typography>
       <Typography color={main} sx={{ mt: "1rem" }}>
         {description}

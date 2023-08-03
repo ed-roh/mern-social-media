@@ -30,7 +30,7 @@ import FlexBetween from "components/FlexBetween";
 import { setSearchValue } from "state/chatSlice";
 import SearchDropdownWidget from "scenes/widgets/SearchDropdownWidget";
 
-const Navbar = ({socket}) => {
+const Navbar = ({socket, lowerBodyRef, setPostTimeDiff}) => {
   const [anchorEl, setAnchorEl] = useState(null)
   
   const handleClick = (event) => {
@@ -79,7 +79,7 @@ const Navbar = ({socket}) => {
       </>
     )
   }
-  
+  // const blurRef = useRef(null)
 
   useEffect(()=>{
     socket?.on("get-notification", (noti)=>{
@@ -87,7 +87,9 @@ const Navbar = ({socket}) => {
         setNotifications(prev=> ([...prev, noti]));
     })
     searchRef.current.querySelector('input').onblur = ()=>{
-      setIsBlurred(true)
+      lowerBodyRef.current?.addEventListener('click', ()=>{
+        setIsBlurred(true)
+      })
     }
     searchRef.current.querySelector('input').onfocus = ()=>{
       setIsBlurred(false)
@@ -122,6 +124,7 @@ const Navbar = ({socket}) => {
             gap="3rem"
             padding="0.1rem 1.5rem"
             position="relative"
+            
           >
             <InputBase onChange={(e)=> dispatch(setSearchValue(e.target.value))} value={searchValue} placeholder="Search..." ref={searchRef}/>
             <IconButton>

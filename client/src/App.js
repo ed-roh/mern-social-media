@@ -10,12 +10,38 @@ import { themeSettings } from "./theme";
 import Messenger from "scenes/Messenger/index22";
 import {io} from "socket.io-client"
 import { config } from "./config";
+import dayjs from "dayjs";
 
 function App() {
   const mode = useSelector((state) => state.authReducer.mode);
   const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
   const isAuth = Boolean(useSelector((state) => state.authReducer.token));
   const [socket, setSocket] = useState(null)
+
+  const setPostTimeDiff = (createdAt, stampOf)=>{
+    const timeStamp = dayjs(createdAt)
+    // console.log(timeStamp.format("dddd, MMMM D YYYY"))
+    const time = timeStamp.format("h:mm a")
+    const date = timeStamp.format("DD-MM-YYYY")
+    if(stampOf==="chats") return {date, time}
+    const timeIntervalInMilliseconds = dayjs().diff(dayjs(createdAt))
+    const months = Math.floor(timeIntervalInMilliseconds/(1000*60*60*24*30))
+    const weeks = Math.floor(timeIntervalInMilliseconds/((1000*60*60*24*7)))
+    const days = Math.floor(timeIntervalInMilliseconds/(1000*60*60*24))
+    const hours = Math.floor(timeIntervalInMilliseconds / 3600000);
+    const minutes = Math.floor((timeIntervalInMilliseconds % 3600000) / 60000);
+    const seconds = Math.floor((timeIntervalInMilliseconds % 60000) / 1000);
+
+    if(months > 0) return `${months}mo`
+    if(weeks > 0) return `${weeks}w`
+    if(days > 0) return `${days}d`
+    if(hours != 0){
+      return `${hours}h`
+    }else if(hours === 0 && minutes !== 0){
+      return `${minutes}m`
+    }
+    return `${seconds}s`
+  }
 
   useEffect(()=>{
     setSocket(io(`http://${config.host}:${config.port}`))
@@ -32,7 +58,7 @@ function App() {
             <Route path="/" element={<LoginPage />} />
             <Route
               path="/home"
-              element={isAuth ? <HomePage socket={socket} /> : <Navigate to="/" />}
+              element={isAuth ? <HomePage setPostTimeDiff={setPostTimeDiff} socket={socket} /> : <Navigate to="/" />}
             />
             <Route
               path="/profile/:userId"
@@ -40,7 +66,7 @@ function App() {
             />
             <Route 
               path="/messenger"
-              element={isAuth ? <Messenger socket={socket} /> : <Navigate to="/" />}
+              element={isAuth ? <Messenger setPostTimeDiff={setPostTimeDiff} socket={socket} /> : <Navigate to="/" />}
             />
             
           </Routes>

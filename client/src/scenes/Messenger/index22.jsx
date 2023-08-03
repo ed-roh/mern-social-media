@@ -13,7 +13,7 @@ import TouchRipple from '@mui/material/ButtonBase/TouchRipple';
 import FriendListWidget from 'scenes/widgets/FriendListWidget';
 const URL_ENDPT = `http://${config.host}:${config.port}/`
 
-const Messenger = ({ socket }) => {
+const Messenger = ({ socket, setPostTimeDiff }) => {
     const { palette } = useTheme();
     const theme = useTheme();
     const dark = palette.neutral.dark;
@@ -211,7 +211,10 @@ const Messenger = ({ socket }) => {
                                 {
                                     !currentConv ? <h1 style={{ textAlign: "center" }} >Select a conversation</h1> : messages.length === 0 ? <h2 style={{ textAlign: "center" }}>No messages to preview</h2> :
                                         messages.map(msgObj => {
-                                            return (
+                                            return (<>
+                                                <Typography sx={{textAlign:msgObj.sender===user._id?"end":"start"}} color={medium} fontSize="0.65rem">{
+                                                    setPostTimeDiff(msgObj.createdAt, "chats").date
+                                                }</Typography>
                                                 <Box
                                                     sx={{
                                                         display: "flex",
@@ -226,12 +229,21 @@ const Messenger = ({ socket }) => {
                                                         variant="outlined"
                                                         sx={{
                                                             p: 1,
+                                                            // backgroundColor: "secondary.dark",
                                                             backgroundColor: "primary.light",
+                                                            borderRadius:
+                                                            msgObj.sender === user._id?
+                                                            "12px 2px 12px 12px":
+                                                            "2px 12px 12px 12px"
                                                         }}
                                                     >
                                                         <Typography variant="body1">{msgObj.text}</Typography>
+                                                        <Typography sx={{textAlign:"end"}} color={medium} fontSize="0.65rem">{
+                                                            setPostTimeDiff(msgObj.createdAt, "chats").time
+                                                        }</Typography>
                                                     </Paper>
                                                 </Box>
+                                                        </>
                                             )
                                         })
                                 }
