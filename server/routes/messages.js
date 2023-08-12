@@ -31,5 +31,14 @@ router.get("/:conversationId", async (req, res)=>{
     }
 })
 
+router.put("/update/:msgId", async(req, res)=>{
+    try {
+        const message = await Message.findByIdAndUpdate(req.params.msgId, req.body, {new:true})
+        res.status(200).json(message)
+    } catch (error) {
+        res.status(500).json({msg:error.message, err:true})
+    }
+})
+
 
 export default router;

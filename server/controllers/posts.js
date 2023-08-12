@@ -77,12 +77,14 @@ export const likePost = async (req, res) => {
 
 export const commentPost = async (req, res)=>{
   try {
+    const date= new Date()
     const { id } = req.params
     const { userId, commentText } = req.body;
     const post = await Post.findById(id);
-    post.comments.push({_id: new mongoose.Types.ObjectId(),userId, commentText})
+    post.comments.push({_id: new mongoose.Types.ObjectId(),userId, commentText, createdAt:date.getTime()})
     
     const updatePost = await Post.findByIdAndUpdate(id, {comments:post.comments}, {new:true});
+    console.log(updatePost)
     res.status(200).json(updatePost);
   } catch (err) {
     res.status(404).json({message:err.message})

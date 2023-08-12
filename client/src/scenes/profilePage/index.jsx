@@ -8,7 +8,7 @@ import MyPostWidget from "scenes/widgets/MyPostWidget";
 import PostsWidget from "scenes/widgets/PostsWidget";
 import UserWidget from "scenes/widgets/UserWidget";
 
-const ProfilePage = () => {
+const ProfilePage = ({setPostTimeDiff}) => {
   const [user, setUser] = useState(null);
   const { userId } = useParams();
   const token = useSelector((state) => state.authReducer.token);
@@ -50,7 +50,7 @@ const ProfilePage = () => {
         >
           <MyPostWidget picturePath={user.picturePath} />
           <Box m="2rem 0" />
-          <PostsWidget userId={userId} isProfile />
+          <PostsWidget setPostTimeDiff={setPostTimeDiff} userId={userId} isProfile />
         </Box>
       </Box>
     </Box>

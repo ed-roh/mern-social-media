@@ -18,7 +18,7 @@ function App() {
   const isAuth = Boolean(useSelector((state) => state.authReducer.token));
   const [socket, setSocket] = useState(null)
 
-  const setPostTimeDiff = (createdAt, stampOf)=>{
+  const setPostTimeDiff = (createdAt, stampOf=null)=>{
     const timeStamp = dayjs(createdAt)
     // console.log(timeStamp.format("dddd, MMMM D YYYY"))
     const time = timeStamp.format("h:mm a")
@@ -62,7 +62,7 @@ function App() {
             />
             <Route
               path="/profile/:userId"
-              element={isAuth ? <ProfilePage /> : <Navigate to="/" />}
+              element={isAuth ? <ProfilePage setPostTimeDiff={setPostTimeDiff} /> : <Navigate to="/" />}
             />
             <Route 
               path="/messenger"

@@ -27,17 +27,18 @@ const HomePage = ({socket, setPostTimeDiff}) => {
 
   return (
     <Box    
+      height="100vh"
     >
       <Navbar socket={socket} setPostTimeDiff={setPostTimeDiff} lowerBodyRef={lowerBodyRef} />
       <Box
         width="100%"
-        padding="2rem 6%"
+        padding="2rem 6% 0 6%"
         display={isNonMobileScreens ? "flex" : "block"}
         // gap="0.5rem"
         justifyContent="space-between"
         ref={lowerBodyRef}
       >
-        <Box flexBasis={isNonMobileScreens ? "26%" : undefined}>
+        <Box flexBasis={isNonMobileScreens ? "26%" : undefined} >
           <UserWidget userId={_id} picturePath={picturePath} />
         </Box>
         <Box
@@ -50,7 +51,7 @@ const HomePage = ({socket, setPostTimeDiff}) => {
           <PostsWidget setPostTimeDiff={setPostTimeDiff} userId={_id} socket={socket} />
         </Box>
         {isNonMobileScreens && (
-          <Box flexBasis="26%" style={{overflowY:"scroll", height:"100vh"}} 
+          <Box flexBasis="26%" style={{overflowY:"scroll", height:"100vh", paddingBottom:"2rem"}} 
             className="adv-friend-box">
             <AdvertWidget />
             <Box m="2rem 0" />

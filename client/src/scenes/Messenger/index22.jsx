@@ -11,6 +11,9 @@ import { setConvs, setMessages } from 'state/chatSlice';
 import UserImage from 'components/UserImage';
 import TouchRipple from '@mui/material/ButtonBase/TouchRipple';
 import FriendListWidget from 'scenes/widgets/FriendListWidget';
+import ThreeDotsDropDown from 'components/ThreeDotsDropDown';
+import ChatBubbles from 'components/ChatBubbles';
+import ChatContainer from 'components/ChatContainer';
 const URL_ENDPT = `http://${config.host}:${config.port}/`
 
 const Messenger = ({ socket, setPostTimeDiff }) => {
@@ -32,6 +35,9 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
     const [currentConv, setCurrentConv] = useState('')
     const rippleRef = useRef(null)
     const [onlineUsers, setOnlineUsers] = useState([])
+    const [isTyping, setIsTyping] = useState(false)
+    const [msgSeen, setMsgSeen] = useState(false)
+    const [msgToSee, setMsgToSee] = useState(null)
 
     const getConversations = async () => {
         console.log("gett")
@@ -59,8 +65,15 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
             }
         );
         const data = await response.json();
+        const dataWithImg = data.map(msgObj => {
+            if (msgObj.sender !== user._id) {
+                const sender = user.friends.find(frnd => frnd._id === msgObj.sender)
+                return { ...msgObj, picturePath: sender.picturePath }
+            }
+            return msgObj
+        })
         setCurrentConv(convId)
-        dispatch(setMessages(data))
+        dispatch(setMessages(dataWithImg))
         chatRef.current.scrollTop = chatRef.current.scrollHeight
 
     }
@@ -72,7 +85,7 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
             `http://localhost:3001/messages/${currentConv}`,
             {
                 method: "POST",
-                body: JSON.stringify({ conversationId: currentConv, sender: user._id, text: msgInput }),
+                body: JSON.stringify({ conversationId: currentConv, sender: user._id, text: msgInput, seen:false }),
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`
@@ -81,21 +94,53 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
         );
         setMsgInput('')
         const data = await response.json();
+        setMsgToSee(data)
         const receiverId = (convs.find(conv => conv._id === currentConv)).members.find(id => id !== user._id)
         socket.emit("send-message", { data, receiverId })
         const currMsgs = [...messages]
         currMsgs.push(data);
+
         dispatch(setMessages(currMsgs));
 
     }
+
+    const handleConvoDelete = async (convoId) => {
+        const response = await fetch(`http://localhost:3001/conversations/${convoId}/delete-convo`, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+        });
+        console.log(await response.json())
+        getConversations();
+    }
+
+    const handleMsgInputChange = (e) => {
+        setMsgInput(prev => e.target.value)
+        const receiverId = (convs.find(conv => conv._id === currentConv)).members.find(id => id !== user._id)
+        socket?.emit("is-typing", { typing: true, receiverId })
+    }
+    const handleKeyUp = (e) => {
+        const receiverId = (convs.find(conv => conv._id === currentConv)).members.find(id => id !== user._id)
+        socket?.emit("not-typing", { typing: false, receiverId })
+    }
+
     const chatRef = useRef(null)
 
     useEffect(() => {
         getConversations();
         console.log("hi")
         socket?.on("get-message", (data) => {
+            const incomingData = { ...data }
             const currMsgs = [...messages]
-            currMsgs.push({ text: data.text, sender: data.senderId, conversationId: data.conversationId })
+
+            const sender = user.friends.find(frnd => frnd._id === incomingData.sender)
+            if (incomingData.sender !== user._id) {
+                incomingData.picturePath = sender.picturePath
+            }
+            // console.log("msg dataaaa",data)
+            currMsgs.push(incomingData)
             dispatch(setMessages(currMsgs))
         })
     }, [socket, messages])
@@ -122,13 +167,34 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
     }, [messages])
 
     useEffect(() => {
+        let timeOutId;
         socket?.emit("new-user", user._id)
         socket?.on("is-online", (userIds) => {
             setOnlineUsers(userIds)
         })
+        socket?.on("start-typing", ({ typing }) => {
+            if (timeOutId !== undefined) clearTimeout(timeOutId)
+            setIsTyping(typing)
+        })
+        socket?.on("stop-typing", ({ typing }) => {
+            timeOutId = setTimeout(() => {
+                setIsTyping(typing)
+            }, 3000)
+        })
+        socket?.on("get-seen", async({seen})=>{
+            const resp = await fetch("http://localhost:3001/messages/update/", {
+                method:"PUT",
+                headers:{
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body:JSON.stringify({seen})
+            })
+            const updatedData = await resp.json()
+            console.log(updatedData)
+            setMsgToSee(updatedData)
+        })
     }, [socket, user._id])
-
-
 
     return (
         <Box>
@@ -142,7 +208,7 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
             >
                 <Box flexBasis={isNonMobileScreens ? "27%" : undefined}>
                     <FlexBetween gap="1rem">
-                        <WidgetWrapper height="70vh" width="23vw">
+                        <WidgetWrapper className="adv-friend-box" style={{ overflowY: "scroll" }} height="70vh" width="23vw">
                             <Box p="1rem 0">
                                 <Typography fontSize="1rem" color={main} fontWeight="500" mb="1rem">
                                     Active chats
@@ -154,14 +220,13 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
                                         const friendObj = user?.friends.find(frnd => frnd._id === frndId)
                                         return (<Box key={friendObj._id + friendObj.firstName}>
 
-                                            <FlexBetween gap="1rem" mt="0.5rem" mb="0.5rem" p="0.5rem" onClick={(e) => handleClickToChat(conv._id)}
+                                            <FlexBetween gap="1rem" mt="0.5rem" mb="0.5rem" p="0.5rem"
                                                 style={{
-                                                    cursor: "pointer",
                                                     backgroundColor: currentConv === conv._id ? mode === "dark" ? "#0A0A0A" : "#e7e7e7" : "",
                                                     borderRadius: "0.75rem"
                                                 }}
                                             >
-                                                <FlexBetween gap="1rem">
+                                                <FlexBetween gap="1rem" onClick={(e) => handleClickToChat(conv._id)}>
                                                     <UserImage image={friendObj?.picturePath} size="40px" />
                                                     <Box>
 
@@ -185,11 +250,19 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
                                                         </Typography>
 
                                                         <Typography
+                                                            color={medium}
+                                                        >
+                                                            {
+                                                                conv.latestText ?
+                                                                    (conv.latestText.length > 15 ? conv.latestText.slice(0, 15) + "..." :
+                                                                        conv.latestText)
+                                                                    : ""
+                                                            }
 
-                                                            color={medium}>{conv.latestText ? conv.latestText : ""}</Typography>
+                                                        </Typography>
                                                     </Box>
-
                                                 </FlexBetween>
+                                                <ThreeDotsDropDown clickActions={{ handleConvoDelete }} convoId={conv._id} />
                                             </FlexBetween>
                                             <TouchRipple ref={rippleRef} />
                                             <Divider />
@@ -201,8 +274,8 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
                             </Box>
                         </WidgetWrapper>
                         <WidgetWrapper height="70vh" width="40vw" style={{
-                            background: 
-                                mode==="dark"?"radial-gradient(circle, hsla(189, 100%, 24%, 1) 0%, hsla(0, 0%, 0%, 1) 100%)":"radial-gradient(circle, hsla(189, 100%, 49%, 1) 0%, hsla(0, 0%, 100%, 1) 100%)"
+                            background:
+                                mode === "dark" ? "radial-gradient(circle, hsla(189, 100%, 24%, 1) 0%, hsla(0, 0%, 0%, 1) 100%)" : "radial-gradient(circle, hsla(189, 100%, 49%, 1) 0%, hsla(0, 0%, 100%, 1) 100%)"
                             // background: "linear-gradient(90deg, rgba(0,213,250,1) 0%, rgba(9,90,121,1) 100%)"
                             // background: "rgb(0,213,250)",
                             // background: "linear-gradient(87deg, rgba(0,213,250,1) 0%, rgba(0,89,105,1) 0%, rgba(0,0,0,1) 100%)"
@@ -210,72 +283,55 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
                             <Box className='chat-box' height="80%" ref={chatRef} sx={{ flexGrow: 1, overflow: "auto", p: 2 }}>
                                 {
                                     !currentConv ? <h1 style={{ textAlign: "center" }} >Select a conversation</h1> : messages.length === 0 ? <h2 style={{ textAlign: "center" }}>No messages to preview</h2> :
-                                        messages.map(msgObj => {
-                                            return (<>
-                                                <Typography sx={{textAlign:msgObj.sender===user._id?"end":"start"}} color={medium} fontSize="0.65rem">{
-                                                    setPostTimeDiff(msgObj.createdAt, "chats").date
-                                                }</Typography>
-                                                <Box
-                                                    sx={{
-                                                        display: "flex",
-                                                        justifyContent: msgObj.sender === user._id ? "flex-end" : "flex-start",
-                                                        mb: 2,
-                                                    }}
-
-                                                    key={msgObj._id + msgObj.sender}
-                                                >
-
-                                                    <Paper
-                                                        variant="outlined"
-                                                        sx={{
-                                                            p: 1,
-                                                            // backgroundColor: "secondary.dark",
-                                                            backgroundColor: "primary.light",
-                                                            borderRadius:
-                                                            msgObj.sender === user._id?
-                                                            "12px 2px 12px 12px":
-                                                            "2px 12px 12px 12px"
-                                                        }}
-                                                    >
-                                                        <Typography variant="body1">{msgObj.text}</Typography>
-                                                        <Typography sx={{textAlign:"end"}} color={medium} fontSize="0.65rem">{
-                                                            setPostTimeDiff(msgObj.createdAt, "chats").time
-                                                        }</Typography>
-                                                    </Paper>
-                                                </Box>
-                                                        </>
-                                            )
-                                        })
+                                    <ChatContainer
+                                        socket={socket}
+                                        messages={messages}sx={{ textAlign: "start", marginLeft: 2 }} color={medium} fontSize="0.70rem"
+                                        user={user}
+                                        medium={medium}
+                                        setPostTimeDiff={setPostTimeDiff}
+                                        receiverId={(convs.find(conv => conv._id === currentConv)).members.find(id => id !== user._id)}
+                                        
+                                    />
+                                        
                                 }
+                                <Typography sx={{ textAlign: "start", marginLeft: 2 }} color={medium} fontSize="0.70rem">
+                                    {isTyping && <img src='/assets/typing.gif' width="20px" />}
+                                    {msgSeen && messages[messages.length-1].sender === user._id
+                                    && <Typography
+                                    sx={{ textAlign: "end", marginLeft: 2 }} 
+                                    color={medium} 
+                                    fontSize="0.70rem">Seen</Typography>}
+                                </Typography>
                             </Box>
                             <Box
                                 height="10%"
                                 m="1rem"
                             >
 
-                                {isNonMobileScreens && (
-                                    <FlexBetween
-                                        backgroundColor={neutralLight}
-                                        borderRadius="9px"
-                                        gap="3rem"
-                                        padding="0.6rem 1.5rem"
-                                        visibility={currentConv ? "visible" : "hidden"}
-                                    >
-                                        <InputBase value={msgInput} onChange={(e) => setMsgInput(prev => e.target.value)} sx={{ fontSize: "16px" }} placeholder="Type Something..." fullWidth
-                                            onKeyDown={
-                                                (e) => {
-                                                    if (e.key === "Enter") handleSendMsg();
-                                                }
+
+                                <FlexBetween
+                                    backgroundColor={neutralLight}
+                                    borderRadius="9px"
+                                    gap="3rem"
+                                    padding="0.6rem 1.5rem"
+                                    visibility={currentConv ? "visible" : "hidden"}
+                                >
+                                    <InputBase value={msgInput} onChange={(e) => handleMsgInputChange(e)} sx={{ fontSize: "16px" }} placeholder="Type Something..." fullWidth
+                                        onKeyDown={
+                                            (e) => {
+                                                if (e.key === "Enter") handleSendMsg();
                                             }
-                                        />
-                                        <IconButton onClick={handleSendMsg} >
-                                            <Send />
-                                        </IconButton>
-                                    </FlexBetween>
-                                )}
+                                        }
+                                        onKeyUp={() => handleKeyUp()}
+                                    />
+                                    <IconButton disabled={!msgInput} onClick={handleSendMsg} >
+                                        <Send style={{ color: msgInput ? "#00D5FA" : "grey" }} />
+                                    </IconButton>
+                                </FlexBetween>
+
                             </Box>
                         </WidgetWrapper>
-                        <WidgetWrapper height="70vh" width="23vw">
+                        <WidgetWrapper className="adv-friend-box" height="70vh" width="23vw" style={{ overflowY: "scroll" }}>
 
                             <FriendListWidget
                                 handleClickToChat={handleClickToChat}

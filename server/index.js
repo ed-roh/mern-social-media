@@ -89,6 +89,25 @@ io.on('connection', (socket) => {
     const receiver = getOnlineUser(receiverId)
     if(!receiver) return
     io.to(receiver.socketId).emit("get-message", data)
+    io.to(receiver.socketId).emit("message-seen", {msgId:data._id})
+  })
+  socket.on("is-typing", ({typing, receiverId})=>{
+    const receiver = getOnlineUser(receiverId)
+    if(!receiver) return
+    io.to(receiver.socketId).emit("start-typing", {typing})
+  })
+
+  socket.on("not-typing", ({typing, receiverId})=>{
+    const receiver = getOnlineUser(receiverId)
+    if(!receiver) return;
+    io.to(receiver.socketId).emit("stop-typing", {typing})
+  })
+
+  socket.on("send-seen", ({seen, receiverId})=>{
+    console.log(seen, receiverId)
+    const receiver = getOnlineUser(receiverId)
+    if(!receiver) return;
+    io.to(receiver.socketId).emit("get-seen", {seen})
   })
 
   socket.on('disconnect', () => {

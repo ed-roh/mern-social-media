@@ -16,6 +16,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setPost } from "state";
 import dayjs from "dayjs";
+import ThreeDotsDropDown from "components/ThreeDotsDropDown";
 
 const PostWidget = ({
   postId,
@@ -83,7 +84,7 @@ const PostWidget = ({
     setCommentValue('')
   }
 
-  const handleCommentDelete = async (commentId) => {
+  const handleCommentDelete = async (postId, commentId) => {
     const response = await fetch(`http://localhost:3001/posts/${postId}/delete-comment`, {
       method: "PATCH",
       headers: {
@@ -96,7 +97,7 @@ const PostWidget = ({
     dispatch(setPost({ post: updatedPost }))
   }
 
-  const handleDeletePost = async ()=>{
+  const handleDeletePost = async (postId)=>{
     const response = await fetch(`http://localhost:3001/posts/${postId}/delete-post`, {
       method: "PATCH",
       headers: {
@@ -173,9 +174,11 @@ const PostWidget = ({
 
         <FlexBetween gap='0.3rem'>
           {loggedInUserId===postUserId?
-          <><IconButton onClick={()=> handleDeletePost()}>
+          <>
+          {/* <IconButton onClick={()=> handleDeletePost()}>
             <DeleteRoundedIcon />
-          </IconButton>
+          </IconButton> */}
+          <ThreeDotsDropDown clickActions={{handleDeletePost}} postId={postId} />
           <IconButton>
             <ShareOutlined />
           </IconButton> </>:
@@ -205,20 +208,29 @@ const PostWidget = ({
               <Divider />
               <FlexBetween>
                 <Typography sx={{ color: main, m: "0.5rem 0", pl: "1rem", wordBreak: 'break-word' }}>
-                  <Typography color={medium}>{
-                    users.find(user => user._id === comment.userId)?.firstName + " " +
-                    users.find(user => user._id === comment.userId)?.lastName
-                  }</Typography><Typography color={main}>{
+                  <FlexBetween gap={2}>
+
+                    <Typography color={medium} fontSize="14px" fontStyle="italic">{
+                      users.find(user => user._id === comment.userId)?.firstName + " " +
+                      users.find(user => user._id === comment.userId)?.lastName
+                    }</Typography>
+                    <Typography color={medium} fontSize={10}>{setPostTimeDiff(comment.createdAt)}</Typography>
+                  </FlexBetween>
+                  
+                  <Typography color={main}>{
                     comment.commentText.length < 150 ? comment.commentText :
                       <>{seeMore ? comment.commentText : comment.commentText.slice(0, 100) + "..."} <span
                         style={{ color: 'blue', textDecoration: "underline", cursor: 'pointer' }}
                         onClick={() => setSeeMore(!seeMore)}> {!seeMore ? ">See more" : "<See less"} </span></>
                   }</Typography>
                 </Typography>
-                {comment.userId === loggedInUserId ?
-                  <IconButton onClick={() => handleCommentDelete(comment._id)}>
-                    <DeleteOutlineIcon fontSize="small" />
-                  </IconButton> : ""}
+                  <ThreeDotsDropDown 
+                    commentId={comment._id} 
+                    postId={postId} 
+                    commentUserId={comment.userId} 
+                    userId={loggedInUserId} 
+                    clickActions={{handleCommentDelete}}
+                    />
               </FlexBetween>
             </Box>
           ))}

@@ -86,13 +86,15 @@ const Navbar = ({socket, lowerBodyRef, setPostTimeDiff}) => {
         setNewNotiCounts(prev => prev+1);
         setNotifications(prev=> ([...prev, noti]));
     })
-    searchRef.current.querySelector('input').onblur = ()=>{
-      lowerBodyRef.current?.addEventListener('click', ()=>{
-        setIsBlurred(true)
-      })
-    }
-    searchRef.current.querySelector('input').onfocus = ()=>{
-      setIsBlurred(false)
+    if(searchRef.current){
+      searchRef.current.querySelector('input').onblur = ()=>{
+        lowerBodyRef.current?.addEventListener('click', ()=>{
+          setIsBlurred(true)
+        })
+      }
+      searchRef.current.querySelector('input').onfocus = ()=>{
+        setIsBlurred(false)
+      }
     }
   },[socket])
 
@@ -110,12 +112,12 @@ const Navbar = ({socket, lowerBodyRef, setPostTimeDiff}) => {
           onClick={() => navigate("/home")}
           sx={{
             "&:hover": {
-              color: primaryLight,
+              // color: primaryLight,
               cursor: "pointer",
             },
           }}
         >
-          Nexus.point
+          <img src="/assets/logo.png" width="38px" />exus.point
         </Typography>
         {isNonMobileScreens && (
           <FlexBetween
@@ -256,10 +258,16 @@ const Navbar = ({socket, lowerBodyRef, setPostTimeDiff}) => {
                 <LightMode sx={{ color: dark, fontSize: "25px" }} />
               )}
             </IconButton>
-            <Message sx={{ fontSize: "25px" }} />
-            <Badge badgeContent={newNotiCounts} color="primary">
-              <Notifications onClick={(e) => handleClick(e)} sx={{ fontSize: "25px" }} />
-            </Badge>
+            <Link style={{textDecoration:"none", color:"white"}} to='/messenger'>
+              <IconButton >
+                  <Message sx={{ fontSize: "25px" }} />
+              </IconButton>
+            </Link>
+            <IconButton>
+              <Badge badgeContent={newNotiCounts} color="primary">
+                <Notifications onClick={(e) => handleClick(e)} sx={{ fontSize: "25px" }} />
+              </Badge>
+            </IconButton>
             <Help sx={{ fontSize: "25px" }} />
             <FormControl variant="standard" value={fullName}>
               <Select
