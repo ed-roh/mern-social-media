@@ -37,10 +37,9 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
     const [onlineUsers, setOnlineUsers] = useState([])
     const [isTyping, setIsTyping] = useState(false)
     const [msgSeen, setMsgSeen] = useState(false)
-    const [msgToSee, setMsgToSee] = useState(null)
+    // const [msgToSee, setMsgToSee] = useState({_id:"someId", text:"someText"})
 
     const getConversations = async () => {
-        console.log("gett")
         try {
             const response = await fetch(
                 `${URL_ENDPT}conversations/${user._id}`,
@@ -81,6 +80,7 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
 
     const handleSendMsg = async () => {
         if (!msgInput.replace(/\s/g, '')) return alert("Write something before sending");
+        setMsgSeen(false)
         const response = await fetch(
             `http://localhost:3001/messages/${currentConv}`,
             {
@@ -94,7 +94,6 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
         );
         setMsgInput('')
         const data = await response.json();
-        setMsgToSee(data)
         const receiverId = (convs.find(conv => conv._id === currentConv)).members.find(id => id !== user._id)
         socket.emit("send-message", { data, receiverId })
         const currMsgs = [...messages]
@@ -112,7 +111,6 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
                 "Content-Type": "application/json"
             },
         });
-        console.log(await response.json())
         getConversations();
     }
 
@@ -130,16 +128,13 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
 
     useEffect(() => {
         getConversations();
-        console.log("hi")
         socket?.on("get-message", (data) => {
             const incomingData = { ...data }
             const currMsgs = [...messages]
-
             const sender = user.friends.find(frnd => frnd._id === incomingData.sender)
             if (incomingData.sender !== user._id) {
                 incomingData.picturePath = sender.picturePath
             }
-            // console.log("msg dataaaa",data)
             currMsgs.push(incomingData)
             dispatch(setMessages(currMsgs))
         })
@@ -181,20 +176,9 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
                 setIsTyping(typing)
             }, 3000)
         })
-        socket?.on("get-seen", async({seen})=>{
-            const resp = await fetch("http://localhost:3001/messages/update/", {
-                method:"PUT",
-                headers:{
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                },
-                body:JSON.stringify({seen})
-            })
-            const updatedData = await resp.json()
-            console.log(updatedData)
-            setMsgToSee(updatedData)
-        })
+        
     }, [socket, user._id])
+    
 
     return (
         <Box>
@@ -248,17 +232,17 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
                                                                     filter: onlineUsers.includes(frndId) ? "" : "invert(50%)", marginLeft: "0.45rem"
                                                                 }} src="/assets/online.png" width="12px" alt="" />
                                                         </Typography>
-
                                                         <Typography
                                                             color={medium}
-                                                        >
+                                                            >
                                                             {
                                                                 conv.latestText ?
                                                                     (conv.latestText.length > 15 ? conv.latestText.slice(0, 15) + "..." :
-                                                                        conv.latestText)
+                                                                    conv.latestText)
                                                                     : ""
-                                                            }
-
+                                                                }
+                                                                &nbsp;&nbsp;
+                                                                {!conv.checked&&<img width="11px" src="/assets/new_msg.png" />}
                                                         </Typography>
                                                     </Box>
                                                 </FlexBetween>
@@ -290,18 +274,24 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
                                         medium={medium}
                                         setPostTimeDiff={setPostTimeDiff}
                                         receiverId={(convs.find(conv => conv._id === currentConv)).members.find(id => id !== user._id)}
+                                        token={token}
+                                        setMsgSeen={setMsgSeen}
+                                        msgSeen={msgSeen}
+                                        currentConv={currentConv}
+                                        getConversations={getConversations}
                                         
                                     />
                                         
                                 }
                                 <Typography sx={{ textAlign: "start", marginLeft: 2 }} color={medium} fontSize="0.70rem">
-                                    {isTyping && <img src='/assets/typing.gif' width="20px" />}
-                                    {msgSeen && messages[messages.length-1].sender === user._id
-                                    && <Typography
-                                    sx={{ textAlign: "end", marginLeft: 2 }} 
-                                    color={medium} 
-                                    fontSize="0.70rem">Seen</Typography>}
+                                    {isTyping && currentConv&&
+                                    <img src='/assets/typing.gif' width="30px" />}
                                 </Typography>
+                                {msgSeen && messages[messages.length-1].sender === user._id
+                                && <Typography
+                                sx={{ textAlign: "end", marginLeft: 2 }} 
+                                color={medium} 
+                                fontSize="0.70rem">Seen</Typography>}
                             </Box>
                             <Box
                                 height="10%"
