@@ -7,7 +7,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import Navbar from 'scenes/navbar'
 import { config } from "../../config";
-import { setConvs, setMessages } from 'state/chatSlice';
+import { setConvs, setMessages, setNewMsgCount } from 'state/chatSlice';
 import UserImage from 'components/UserImage';
 import TouchRipple from '@mui/material/ButtonBase/TouchRipple';
 import FriendListWidget from 'scenes/widgets/FriendListWidget';
@@ -30,6 +30,7 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
     const mode = useSelector(state => state.authReducer.mode)
     const convs = useSelector(state => state.chatReducer.convs)
     const messages = useSelector(state => state.chatReducer.messages)
+
     const dispatch = useDispatch()
     const [msgInput, setMsgInput] = useState('')
     const [currentConv, setCurrentConv] = useState('')
@@ -37,7 +38,6 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
     const [onlineUsers, setOnlineUsers] = useState([])
     const [isTyping, setIsTyping] = useState(false)
     const [msgSeen, setMsgSeen] = useState(false)
-    // const [msgToSee, setMsgToSee] = useState({_id:"someId", text:"someText"})
 
     const getConversations = async () => {
         try {
@@ -55,7 +55,7 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
         }
     }
 
-    const handleClickToChat = async (convId) => {
+    const handleClickToChat = async (convId, lastSender, seen) => {
         const response = await fetch(
             `http://localhost:3001/messages/${convId}`,
             {
@@ -72,6 +72,7 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
             return msgObj
         })
         setCurrentConv(convId)
+        if(!seen&&lastSender!==user._id) updateConvo(convId)
         dispatch(setMessages(dataWithImg))
         chatRef.current.scrollTop = chatRef.current.scrollHeight
 
@@ -96,6 +97,7 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
         const data = await response.json();
         const receiverId = (convs.find(conv => conv._id === currentConv)).members.find(id => id !== user._id)
         socket.emit("send-message", { data, receiverId })
+        socket.emit("send-newMsg-count", {receiverId})
         const currMsgs = [...messages]
         currMsgs.push(data);
 
@@ -123,11 +125,26 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
         const receiverId = (convs.find(conv => conv._id === currentConv)).members.find(id => id !== user._id)
         socket?.emit("not-typing", { typing: false, receiverId })
     }
+    const updateConvo = async(convId)=>{
+        try {
+            const resp = await fetch(`http://localhost:3001/conversations/${convId}/update-check/`, {
+                method:"PUT",
+                headers:{
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            })
+            getConversations()
+        } catch (error) {
+            console.log(error.message)
+        }
+    }
 
     const chatRef = useRef(null)
 
     useEffect(() => {
         getConversations();
+        dispatch(setNewMsgCount(0))
         socket?.on("get-message", (data) => {
             const incomingData = { ...data }
             const currMsgs = [...messages]
@@ -159,6 +176,7 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
         if (chatRef.current) {
             chatRef.current.scrollTop = chatRef.current.scrollHeight;
         }
+
     }, [messages])
 
     useEffect(() => {
@@ -210,7 +228,7 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
                                                     borderRadius: "0.75rem"
                                                 }}
                                             >
-                                                <FlexBetween gap="1rem" onClick={(e) => handleClickToChat(conv._id)}>
+                                                <FlexBetween gap="1rem" onClick={(e) => handleClickToChat(conv._id, conv.senderId,conv.checked)}>
                                                     <UserImage image={friendObj?.picturePath} size="40px" />
                                                     <Box>
 
@@ -242,7 +260,10 @@ const Messenger = ({ socket, setPostTimeDiff }) => {
                                                                     : ""
                                                                 }
                                                                 &nbsp;&nbsp;
-                                                                {!conv.checked&&<img width="11px" src="/assets/new_msg.png" />}
+                                                                {
+                                                                conv.senderId!==user._id&&
+                                                                !conv.checked&&
+                                                                <img width="11px" src="/assets/new_msg.png" />}
                                                         </Typography>
                                                     </Box>
                                                 </FlexBetween>

@@ -57,6 +57,7 @@ router.delete("/:userId/:friendId", async (req, res) => {
     }
 })
 
+// update conversation
 router.put("/:convoId/delete-convo", async (req, res) => {
     const convoId  = req.params.convoId
     try {
@@ -64,7 +65,16 @@ router.put("/:convoId/delete-convo", async (req, res) => {
         const dlted = await Conversation.findByIdAndDelete(convoId);
         res.status(200).json({ deleted: true, msg: "conversation deleted successfully", err: false })
     } catch (error) {
-        res.status(500).json({ deleted: true, msg: error.message, err: true })
+        res.status(500).json({ deleted: false, msg: error.message, err: true })
+    }
+})
+
+router.put("/:convoId/update-check/", async(req, res)=>{
+    try {
+        const resp = await Conversation.findByIdAndUpdate(req.params.convoId, {checked:true}, {new:true})
+        res.status(200).json(resp)
+    } catch (error) {
+        res.status(500).json({ msg: error.message, err: true })
     }
 })
 

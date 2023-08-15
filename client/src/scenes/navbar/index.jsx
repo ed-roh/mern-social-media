@@ -27,8 +27,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { setMode, setLogout } from "state";
 import { Link, useNavigate } from "react-router-dom";
 import FlexBetween from "components/FlexBetween";
-import { setSearchValue } from "state/chatSlice";
+import { setConvs, setNewMsgCount, setSearchValue } from "state/chatSlice";
 import SearchDropdownWidget from "scenes/widgets/SearchDropdownWidget";
+import { config } from "../../config";
+const URL_ENDPT = `http://${config.host}:${config.port}/`
 
 const Navbar = ({socket, lowerBodyRef, setPostTimeDiff}) => {
   const [anchorEl, setAnchorEl] = useState(null)
@@ -48,8 +50,8 @@ const Navbar = ({socket, lowerBodyRef, setPostTimeDiff}) => {
   const [isBlurred, setIsBlurred] = useState(true)
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const {user, users} = useSelector((state) => state.authReducer);
-  const {searchValue} = useSelector((state) => state.chatReducer);
+  const {user, users, token} = useSelector((state) => state.authReducer);
+  const {searchValue, newMsgCount, convs} = useSelector((state) => state.chatReducer);
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
   const searchRef = useRef(null)
 
@@ -62,6 +64,22 @@ const Navbar = ({socket, lowerBodyRef, setPostTimeDiff}) => {
   const main = theme.palette.neutral.main;
 
   const fullName = `${user.firstName} ${user.lastName}`;
+
+  const getConversations = async () => {
+    try {
+        const response = await fetch(
+            `${URL_ENDPT}conversations/${user._id}`,
+            {
+                method: "GET",
+                headers: { Authorization: `Bearer ${token}` },
+            }
+        );
+        const data = await response.json();
+        dispatch(setConvs(data))
+    } catch (error) {
+        console.log(error)
+    }
+}
 
   const displayNotification = ({userName, type})=>{
     let action;
@@ -82,6 +100,10 @@ const Navbar = ({socket, lowerBodyRef, setPostTimeDiff}) => {
   // const blurRef = useRef(null)
 
   useEffect(()=>{
+    getConversations()
+  },[])
+
+  useEffect(()=>{
     socket?.on("get-notification", (noti)=>{
         setNewNotiCounts(prev => prev+1);
         setNotifications(prev=> ([...prev, noti]));
@@ -96,7 +118,20 @@ const Navbar = ({socket, lowerBodyRef, setPostTimeDiff}) => {
         setIsBlurred(false)
       }
     }
+
   },[socket])
+
+  useEffect(()=>{
+    socket?.on("get-newMsg-count", ({isNewMsg})=>{
+      let count = 0;
+      if(isNewMsg) {
+        convs.forEach(el=>{
+          if(el.checked) count+=1;
+        })
+      }
+      dispatch(setNewMsgCount(count))
+    })
+  }, [socket, convs])
 
   return (
     <FlexBetween padding="1rem 6%" backgroundColor={alt}
@@ -152,7 +187,9 @@ const Navbar = ({socket, lowerBodyRef, setPostTimeDiff}) => {
           </IconButton>
             <Link style={{textDecoration:"none", color:"white"}} to='/messenger'>
               <IconButton >
+                <Badge variant={newMsgCount>0?"dot":""} color="primary">
                   <Message sx={{ fontSize: "25px" }} />
+                </Badge>
               </IconButton>
             </Link>
             <IconButton onClick={(e) => handleClick(e)}>
@@ -260,7 +297,9 @@ const Navbar = ({socket, lowerBodyRef, setPostTimeDiff}) => {
             </IconButton>
             <Link style={{textDecoration:"none", color:"white"}} to='/messenger'>
               <IconButton >
+                <Badge variant="dot" color="primary">
                   <Message sx={{ fontSize: "25px" }} />
+                </Badge>
               </IconButton>
             </Link>
             <IconButton>

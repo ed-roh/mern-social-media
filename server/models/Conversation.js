@@ -8,6 +8,12 @@ const ConversationSchema = mongoose.Schema(
     latestText:{
       type:String,
       default:''
+    },
+    checked:{
+      type:Boolean
+    },
+    senderId:{
+      type:String
     }
   },
   { timestamps: true }

@@ -110,6 +110,12 @@ io.on('connection', (socket) => {
     io.to(receiver.socketId).emit("get-seen", {seen})
   })
 
+  socket.on("send-newMsg-count", ({receiverId})=>{
+    const receiver = getOnlineUser(receiverId)
+    if(!receiver) return;
+    io.to(receiver.socketId).emit("get-newMsg-count", {isNewMsg:true})
+  })
+
   socket.on('disconnect', () => {
     removeUser(socket.id)
     socket.emit("is-online", onlienUsers.map(user=>user.userId))
@@ -134,7 +140,7 @@ const PORT = process.env.PORT || 6001;
 mongoose
   .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
-    useUnifiedTopology: true,
+    useUnifiedTopology: true
   })
   .then(() => {
     server.listen(PORT, () => console.log(`Server Port: ${PORT}`));

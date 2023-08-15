@@ -10,7 +10,7 @@
     - getting notified on message
     - <s>set a chat bg</s>
     - <s>timestamps on message sent</s>
-    - set messages as reed when seen
+    - <s>set messages as reed when seen</s>
     - <s>delete conversation option</s>
     - <s>sender image beside chat bubbles</s>
     - <s>showing typing animation on type</s>
@@ -32,6 +32,7 @@
     - <s> make friends from search results</s>
     - add a new component to show all friends from search results
     - <s>disable suggestions on blur from input</s>
+    - <s>notification count on new message</s>
 
 - Profile page
     - fix reload problem
