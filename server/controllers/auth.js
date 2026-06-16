@@ -4,6 +4,7 @@ import User from "../models/User.js";
 
 /* REGISTER USER */
 export const register = async (req, res) => {
+  console.log("registerrr", req.file)
   try {
     const {
       firstName,
@@ -24,7 +25,7 @@ export const register = async (req, res) => {
       lastName,
       email,
       password: passwordHash,
-      picturePath,
+      picturePath:req.file.path,
       friends,
       location,
       occupation,
@@ -34,6 +35,7 @@ export const register = async (req, res) => {
     const savedUser = await newUser.save();
     res.status(201).json(savedUser);
   } catch (err) {
+    console.log(err.message)
     res.status(500).json({ error: err.message });
   }
 };

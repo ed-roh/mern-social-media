@@ -7,4 +7,12 @@ body,
   height: 100%;
   width: 100%;
   font-family: "Rubik", sans-serif;
+  /* overflow-y: hidden; */
+}
+
+
+
+.navtitle{
+  font-weight:"bold";
+  font-size:"2rem";
 }
